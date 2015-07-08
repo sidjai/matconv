@@ -11,10 +11,8 @@
 #' @export
 mat2r <- function(pathInMat, pathOutR, funcConverters, verbose = 1){
 
-	options <- list(...)
-
-	#<check if pathMat is a .m file>
-	linesDes <- linesOrg <- readLines(pathInMat)
+	rawMat <- readLines(pathInMat)
+	linesDes <- linesOrg <- gsub("\\s+$", "",rawMat)
 	isScr <- !grepl("function", linesOrg[1])
 
 	#Get rid of semi colons
@@ -26,10 +24,6 @@ mat2r <- function(pathInMat, pathOutR, funcConverters, verbose = 1){
 	codeDes <- linesDes[!commentSet]
 
 	codeDes <- convEasySyntax(codeDes)
-
-	#make sure declarations are surounded by parenthesis ad ended with a "{"
-	#Replace "end" with a "}"
-	convEnvLoops(linesDes)
 
 	results <- vapply(funcConverters, function(conv){
 		useFuncConv(codeDes, conv)
