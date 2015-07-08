@@ -1,6 +1,6 @@
 #' mat2r
 #'
-#'The top level driver function to call the converting functions and handle the 
+#'The top level driver function to call the converting functions and handle the
 #'input and output.
 #' @param pathInMat A string file path with the input MatLab / Octave code to be converted
 #' @param pathOutR A string file path with the desired output file location
@@ -10,35 +10,43 @@
 #' @return A list containing the report file and the converted code.
 #' @export
 mat2r <- function(pathInMat, pathOutR, funcConverters, verbose = 1){
-	
+
 	options <- list(...)
-	
+
 	#<check if pathMat is a .m file>
 	linesDes <- linesOrg <- readLines(pathInMat)
 	isScr <- !grepl("function", linesOrg[1])
-	
-	#Get rid of semi colons 
+
+	#Get rid of semi colons
 	# gsub([=], [<-]) #also make sure there are spaces surrounding
-	# 
-	convEnvEasySyntax(linesDes)
-	
+	#
+
+	commentSet <- grepl("^%", linesDes)
+
+	codeDes <- linesDes[!commentSet]
+
+	codeDes <- convEasySyntax(codeDes)
+
 	#make sure declarations are surounded by parenthesis ad ended with a "{"
 	#Replace "end" with a "}"
 	convEnvLoops(linesDes)
 
 	results <- vapply(funcConverters, function(conv){
-		useFuncConv(linesDes, conv)
+		useFuncConv(codeDes, conv)
 	}, rep(5,1)) #Converter results
-	
+
+	linesDes[!commentSet] <- results
+	linesDes[commentSet] <- gsub("%", "#", linesDes[commentSet])
+
 	if(verbose == 2 ){
 		cat(results)
 		cat(sprintf("The previous code had %f lines and the R code has %f lines", length(linesOrg), length(linesDes)))
 	} else if (verbose == 1) {
 		cat(results)
 	}
-	
+
 	writeLines(linesDes, pathOutR)
-	
+
 	return(list(report = results,
 							matCode = linesOrg,
 							rCode = linesDes)
