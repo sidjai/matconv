@@ -9,7 +9,7 @@
 #'
 #' @return A list containing the report file and the converted code.
 #' @export
-mat2r <- function(pathInMat, pathOutR, funcConverters, verbose = 1){
+mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
 
 	rawMat <- readLines(pathInMat)
 	linesDes <- linesOrg <- gsub("\\s+$", "",rawMat)
@@ -24,25 +24,27 @@ mat2r <- function(pathInMat, pathOutR, funcConverters, verbose = 1){
 	codeDes <- linesDes[!commentSet]
 
 	codeDes <- convEasySyntax(codeDes)
+	if(!is.null(funcConverters)){
+		codeDes <- vapply(funcConverters, function(conv){
+			useFuncConv(codeDes, conv)
+		}, rep(5,1))
+	}
 
-	results <- vapply(funcConverters, function(conv){
-		useFuncConv(codeDes, conv)
-	}, rep(5,1)) #Converter results
+	
 
-	linesDes[!commentSet] <- results
+	linesDes[!commentSet] <- codeDes
 	linesDes[commentSet] <- gsub("%", "#", linesDes[commentSet])
 
 	if(verbose == 2 ){
-		cat(results)
+		cat(codeDes)
 		cat(sprintf("The previous code had %f lines and the R code has %f lines", length(linesOrg), length(linesDes)))
 	} else if (verbose == 1) {
-		cat(results)
+		cat(codeDes)
 	}
 
 	writeLines(linesDes, pathOutR)
 
-	return(list(report = results,
-							matCode = linesOrg,
+	return(list(matCode = linesOrg,
 							rCode = linesDes)
 	)
 }

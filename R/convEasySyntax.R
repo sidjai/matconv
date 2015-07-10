@@ -1,9 +1,9 @@
 convEasySyntax  <- function(linesMat){
-
-
-	linesOut <- convSemiColon(linesMat)
+	
+	linesOut <- convSymbols(linesMat)
+	linesOut <- convSemiColon(linesOut)
 	linesOut <- convIfElse(linesOut)
-	for (loopType in c("for", "if", "while")){
+	for (loopType in c("for", "while")){
 		linesOut <- convLoops(linesOut,loopType)
 	}
 
@@ -19,12 +19,13 @@ convSemiColon <- function(linesMat){
 convEqualsArrow <- function(linesMat){
 
 	out <- gsub(" = ", " <- ", linesMat)
+	
 
 	#filter all the other cases matlab uses =
-	logStrs <- c("==", "<=", ">=")
+	logStrs <- c("==", "<=", ">=", "!=")
 	logSet <- vapply(logStrs, function(x){ grepl(x, linesMat) },
 		rep(TRUE, length(linesMat)))
-	logSet <- (logSet[, 1] | logSet[, 2] | logSet[, 3] )
+	logSet <- as.logical(rowSums(logSet))
 	out[!logSet] <- gsub("=", " <- ", out[!logSet])
 }
 
@@ -34,17 +35,37 @@ convLoops <- function(linesMat, loopStr){
 		res <- x
 		if( !(grepl("\\(", x) && grepl("\\)$", x)) ){
 			res <- gsub(paste0(loopStr, " "), paste(loopStr, "\\(" ), x)
-			res <- paste0(res, "\\)\\{")
+			res <- paste0(res, "\\){")
 		} else {
-			res <- paste0(res, "\\{")
+			res <- paste0(res, "{")
 		}
-		if( !grepl("if", loopStr)){
-			res <- gsub(" = ", " in ", res)
-			res <- gsub("=", " in ", res)
-		}
-	}, rep(TRUE, length(linesMat[forSet])))
+		
+		res <- gsub(" = ", " in ", res)
+		res <- gsub("=", " in ", res)
+		
+		return(res)
+	}, "e")
+	
+	
 
-	linesMat <- gsub("end", "\\}", linesMat)
+	
 	return(linesMat)
 
+}
+
+convIfElse  <- function(linesMat){
+	
+	elseSet <- grepl("else ", linesMat)
+	ifelseSet <- grepl("elseif", linesMat)
+	ifSet <- grepl("if", linesMat) & !ifelseSet
+	
+	linesMat[ifelseSet] <- print(gsub("elseif", "} else if (", linesMat[ifelseSet]),
+															 "\\){")
+	linesMat[elseSet] <- gsub("else", "} else {", linesMat[elseSet])
+	
+	
+}
+convSymbols <- function(linesMat){
+	linesMat <- gsub("end", "}", linesMat)
+	return(gsub("~", "!", linesMat))
 }

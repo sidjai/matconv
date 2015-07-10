@@ -4,7 +4,7 @@
 \alias{mat2r}
 \title{mat2r}
 \usage{
-mat2r(pathInMat, pathOutR, funcConverters, verbose = 1)
+mat2r(pathInMat, pathOutR, funcConverters = NULL, verbose = 1)
 }
 \arguments{
 \item{pathInMat}{A string file path with the input MatLab / Octave code to be converted}
