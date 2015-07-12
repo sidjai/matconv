@@ -19,7 +19,7 @@ mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
 	# gsub([=], [<-]) #also make sure there are spaces surrounding
 	#
 
-	commentSet <- grepl("^%", linesDes)
+	commentSet <- grepl("^%", linesDes) | grepl("^\\s+%", linesDes)
 
 	codeDes <- linesDes[!commentSet]
 
