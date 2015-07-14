@@ -75,3 +75,13 @@ paraAroundThings <- function(sin, type){
 	return(sin)
 	
 }
+
+trimWhite <- function(sin, where = "both"){
+	return(switch(where,
+								beg = gsub("^\\s+", "", sin),
+								end = gsub("\\s+$", "", sin),
+								both = gsub("^\\s+|\\s+$", "", sin)
+	))
+	
+	
+}

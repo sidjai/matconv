@@ -12,8 +12,10 @@
 mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
 
 	rawMat <- readLines(pathInMat)
-	linesDes <- linesOrg <- gsub("\\s+$", "",rawMat)
+	linesDes <- linesOrg <- trimWhite(rawMat, "end")
 	isScr <- !grepl("function", linesOrg[1])
+	
+	
 
 	#Get rid of semi colons
 	# gsub([=], [<-]) #also make sure there are spaces surrounding
@@ -22,18 +24,23 @@ mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
 	commentSet <- grepl("^%", linesDes) | grepl("^\\s+%", linesDes)
 
 	codeDes <- linesDes[!commentSet]
-
 	codeDes <- convEasySyntax(codeDes)
+	
+	linesDes[!commentSet] <- codeDes
+	linesDes[commentSet] <- gsub("%", "#", linesDes[commentSet])
+	
+	if (!isScr) linesDes <- convUserFunctions(linesDes)
+
+	
 	if(!is.null(funcConverters)){
 		codeDes <- vapply(funcConverters, function(conv){
-			useFuncConv(codeDes, conv)
+			useFuncConv(linesDes, conv)
 		}, rep(5,1))
 	}
 
 	
 
-	linesDes[!commentSet] <- codeDes
-	linesDes[commentSet] <- gsub("%", "#", linesDes[commentSet])
+	
 
 	if(verbose == 2 ){
 		cat(codeDes)
