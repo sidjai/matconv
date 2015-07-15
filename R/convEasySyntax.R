@@ -1,6 +1,9 @@
 convEasySyntax  <- function(linesMat){
+	lcode <- getInlineComments(linesMat)
+	linesOut <- lcode$sansInLineCom
 	
-	linesOut <- convSymbols(linesMat)
+	
+	linesOut <- convSymbols(linesOut)
 	linesOut <- convSemiColon(linesOut)
 	linesOut <- convIfElse(linesOut)
 	for (loopType in c("for", "while")){
@@ -8,7 +11,8 @@ convEasySyntax  <- function(linesMat){
 	}
 
 	linesOut <- convEqualsArrow(linesOut)
-
+	
+	linesOut <- paste0(linesOut, lcode$inLineCom)
 	return(linesOut)
 }
 
@@ -54,9 +58,34 @@ convIfElse  <- function(linesMat){
 	
 	return(linesMat)
 }
+
 convSymbols <- function(linesMat){
 	linesMat <- gsub("end", "}", linesMat)
 	return(gsub("~", "!", linesMat))
+}
+
+getInlineComments <- function(linesMat){
+	lout <- list()
+	lout$inLineCom <- rep('', length(linesMat))
+	lout$sansInLineCom <- linesMat
+	
+	endInd <- regexpr("\\;", linesMat)
+	percentInd <- regexpr("\\%", linesMat)
+	inLineSet <- (endInd < percentInd)
+	
+	
+	lout$inLineCom[inLineSet] <- substr(linesMat[inLineSet],
+																			percentInd[inLineSet],
+																			nchar(linesMat[inLineSet]))
+	lout$inLineCom <- gsub("\\%", "#", lout$inLineCom)
+	
+	lout$sansInLineCom[inLineSet] <- 
+		trimWhite(substr(linesMat[inLineSet],
+										 1,
+										 percentInd[inLineSet] - 1), 
+							"end")
+	
+	return(lout)
 }
 
 paraAroundThings <- function(sin, type){
