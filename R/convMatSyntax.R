@@ -8,6 +8,8 @@ convUserFunctions <- function(linesMat){
   }, 1)] -1
   retInd <- c(retInd, rev(allEndInd)[1] - 1 )
   returnObj <- captureBetween(linesFun, "[", "]")
+  
+  if (grepl(',', returnObj)) returnObj <- sprintf("list(%s)", returnObj)
   args <- captureBetween(linesFun, "(", ")")
   
   funName <- captureBetween(linesFun, "- ", "(")
