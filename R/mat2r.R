@@ -2,24 +2,32 @@
 #'
 #'The top level driver function to call the converting functions and handle the
 #'input and output.
-#' @param pathInMat A string file path with the input MatLab / Octave code to be converted
-#' @param pathOutR A string file path with the desired output file location
-#' @param funcConverters a list of function converters that the user wants ot use this conversion
-#' @param verbose A number indicating the amount of output desired. (0-2)
+#' @param inMat A file path with the input MatLab / Octave code to be converted
+#' or a character vector of the code that needs to be converted
+#' @param pathOutR A file path with the desired output file location
+#' @param funcConverters A list of function converters that the user wants to use in this conversion
+#' @param verbose A number indicating the amount of messages that should be outputed.
+#' \describe{
+#'   \item{0}{No messages}
+#'   \item{1}{A summary report of what happened in the conversion}
+#'   \item{2}{The final code as a message as well as the summary report}
+#' } 
 #'
-#' @return A list containing the report file and the converted code.
+#' @return A list containing the original code (named matCode) and the converted code (named rCode).
 #' @export
-mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
+mat2r <- function(inMat, pathOutR ='', funcConverters = NULL, verbose = 1){
 
-	rawMat <- readLines(pathInMat)
+	if (length(inMat) ==1 && file.exists(inMat){
+		if(grepl(".m", inMat)) stop("Please supply a '.m' file")
+		rawMat <- readLines(inMat)
+	} else {
+		rawMat <- inMat
+	}
+
 	linesDes <- linesOrg <- trimWhite(rawMat, "end")
 	isScr <- !grepl("function", linesOrg[1])
 	
-	
 
-	#Get rid of semi colons
-	# gsub([=], [<-]) #also make sure there are spaces surrounding
-	#
 
 	commentSet <- grepl("^%", linesDes) | grepl("^\\s+%", linesDes)
 
@@ -40,18 +48,17 @@ mat2r <- function(pathInMat, pathOutR, funcConverters = NULL, verbose = 1){
 
 	
 
-	
+	report <- sprintf("The previous code had %f lines and the R code has %f lines", length(linesOrg), length(linesDes))
 
 	if(verbose == 2 ){
-		cat(codeDes)
-		cat(sprintf("The previous code had %f lines and the R code has %f lines", length(linesOrg), length(linesDes)))
+		message(report)
+		message(linesDes)
 	} else if (verbose == 1) {
-		cat(codeDes)
+		message(report)
 	}
+	
+	if(nzchar(pathOutR)) writeLines(linesDes, pathOutR)
 
-	writeLines(linesDes, pathOutR)
+	return(list(matCode = linesOrg, rCode = linesDes))
 
-	return(list(matCode = linesOrg,
-							rCode = linesDes)
-	)
 }
