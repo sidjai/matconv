@@ -1,17 +1,29 @@
+---
+title: "matconv: The use of syntax converters"
+author: "Siddarta Jairam"
+date: "`r strftime(Sys.time(),'%A, %B %d, %Y')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overall design}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
 
 
-title: matconv: The use of syntax converters
-
-
-```{r setup}
+```{r setup, include=FALSE}
 library(matconv)
 library(knitr)
 
+knitr::opts_chunk$set(fig.pos='center', echo=FALSE, comment='>', results='asis')
+
 showExampleConv <- function(matIn){
-	lout <- mat2R(matIn, verbose = 0)
-	headings <- names(lout)
+	lout <- mat2r(matIn, verbose = 0)
+	diff <- length(lout[[2]]) - length(lout[[1]])
+	if (diff > 0){
+		lout[[1]] <- c(lout[[1]], rep("", diff))
+	}
 	
-	kable(lout)
+	knitr::kable(as.data.frame(lout))
 }
 
 ```
@@ -41,10 +53,10 @@ Next it goes through all the different flow control blocks and converts them to 
 3. for
 4. while
 
-Switch statements will be included in a future version as R does not really have a true switch / case type block. The 'switch' function is helpful in a lot of situations but the usage is different from how other languages do switch blocks. Below are some examples of how its used for the other blocks. 
+Switch statements will be included in a future version as R does not really have a true switch / case type block. The 'switch' function is helpful in a lot of situations but the usage is different from how other languages do switch blocks. Below are some examples of how its used for the other blocks.
 
 ```{r flow}
-example <- c()
+example <- c("if argLen == 1", "  doThing = 9999;","else", "  doThing = 1;","end")
 showExampleConv(example)
 
 ```
@@ -56,7 +68,7 @@ In matlab there is a distinction between script files and function files. If a f
 The returned objects are gathered and put in a 'return' statement at the end of the function. If there is more than one return statement a list of those objects are returned. Default inputs or an unknown length of inputs into a matLab function is handled using a protected word 'varargin'. The closest R equivalent is '...' which will be turned into a list as the variable 'varargin' in the R version. There is a whole family of input and output handlers in matLab but this is the most useful in my eyes so I gave it higher priority. Examples of this type of conversion is shown below.
 
 ```{r userFunctions}
-example <- c()
+example <- c("function [ dat ] = xlsReadPretty(varargin))", "  didThing = 1*3;", "  dat = didThing / 3;", "end")
 showExampleConv(example)
 
 ```

@@ -17,7 +17,7 @@
 #' @export
 mat2r <- function(inMat, pathOutR ='', funcConverters = NULL, verbose = 1){
 
-	if (length(inMat) ==1 && file.exists(inMat){
+	if (length(inMat) == 1 && file.exists(inMat)){
 		if(grepl(".m", inMat)) stop("Please supply a '.m' file")
 		rawMat <- readLines(inMat)
 	} else {

@@ -4,19 +4,25 @@
 \alias{mat2r}
 \title{mat2r}
 \usage{
-mat2r(pathInMat, pathOutR, funcConverters = NULL, verbose = 1)
+mat2r(inMat, pathOutR = "", funcConverters = NULL, verbose = 1)
 }
 \arguments{
-\item{pathInMat}{A string file path with the input MatLab / Octave code to be converted}
+\item{inMat}{A file path with the input MatLab / Octave code to be converted
+or a character vector of the code that needs to be converted}
 
-\item{pathOutR}{A string file path with the desired output file location}
+\item{pathOutR}{A file path with the desired output file location}
 
-\item{funcConverters}{a list of function converters that the user wants ot use this conversion}
+\item{funcConverters}{A list of function converters that the user wants to use in this conversion}
 
-\item{verbose}{A number indicating the amount of output desired. (0-2)}
+\item{verbose}{A number indicating the amount of messages that should be outputed.
+\describe{
+  \item{0}{No messages}
+  \item{1}{A summary report of what happened in the conversion}
+  \item{2}{The final code as a message as well as the summary report}
+}}
 }
 \value{
-A list containing the report file and the converted code.
+A list containing the original code (named matCode) and the converted code (named rCode).
 }
 \description{
 The top level driver function to call the converting functions and handle the
