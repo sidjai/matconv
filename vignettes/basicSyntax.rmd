@@ -22,8 +22,16 @@ showExampleConv <- function(matIn){
 	if (diff > 0){
 		lout[[1]] <- c(lout[[1]], rep("", diff))
 	}
+	output <- c("<table><tr>",
+    paste0("<th>",names(lout)[1],"</th>"),
+		paste0("<th>",names(lout)[2],"</th>"),
+		"<tr> <td valign = top>",
+		paste('|', lout[[1]], "\n"),
+		"</td>", "<td valign = top>",
+		paste('|', lout[[2]], "\n"),
+		"</td> </table>")
 	
-	knitr::kable(as.data.frame(lout))
+	cat(paste(output, collapse = "\n"))
 }
 
 ```
