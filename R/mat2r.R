@@ -18,7 +18,7 @@
 mat2r <- function(inMat, pathOutR ='', funcConverters = NULL, verbose = 1){
 
 	if (length(inMat) == 1 && file.exists(inMat)){
-		if(grepl(".m", inMat)) stop("Please supply a '.m' file")
+		if(!grepl("[.]m", inMat)) stop("Please supply a '.m' file")
 		rawMat <- readLines(inMat)
 	} else {
 		rawMat <- inMat
@@ -48,7 +48,9 @@ mat2r <- function(inMat, pathOutR ='', funcConverters = NULL, verbose = 1){
 
 	
 
-	report <- sprintf("The previous code had %f lines and the R code has %f lines", length(linesOrg), length(linesDes))
+	report <- sprintf("The previous code had %d lines and the R code has %d lines",
+                    length(linesOrg),
+                    length(linesDes))
 
 	if(verbose == 2 ){
 		message(report)
