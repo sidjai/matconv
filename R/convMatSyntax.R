@@ -9,14 +9,14 @@ convUserFunctions <- function(linesMat){
   retInd <- c(retInd, rev(allEndInd)[1] - 1 )
 
   #Deal with return objects
-  returnObj <- captureBetween(linesFun, "[", "]")
+  returnObj <- getBetween(linesFun, "[", "]")
   multOutSet <- grepl(',', returnObj)
-  
+
   returnObj[multOutSet] <- sprintf("list(%s)", returnObj[multOutSet])
   returnObj <- sprintf("\treturn(%s)", returnObj)
-	
+
   #Deal with the arguments
-  args <- captureBetween(linesFun, "(", ")")
+  args <- getBetween(linesFun, "(", ")")
   varargSet <- grepl("varargin", args)
   comSet <- grepl("^#", linesMat) | grepl("^\\s+#", linesMat)
   noComInd <- which(!comSet)
@@ -24,12 +24,12 @@ convUserFunctions <- function(linesMat){
     which(noComInd > x)[1]
     }, 1)] - 1
   decObj <- rep("\tvarargin <- list(...)", length(decInd))
-  
 
-  funName <- captureBetween(linesFun, "- ", "(")
+
+  funName <- getBetween(linesFun, "- ", "(")
   linesFun <- paste(funName, "<-", sprintf("function(%s){", args))
   linesFun <- gsub("varargin", "...", linesFun)
-  
+
   linesMat[funInd] <- linesFun
 
   # save the appending stuff for last cause it throws off all the indices
@@ -43,12 +43,4 @@ convUserFunctions <- function(linesMat){
 
 
   return(linesMat)
-}
-
-captureBetween <- function(sin, left, right){
-	leftPos <- regexpr(paste0("\\", left), sin)
-	rightPos <- regexpr(paste0("\\", right), sin)
-	cap <- substr(sin, leftPos + 1 , rightPos - 1)
-	return(trimWhite(cap))
-
 }

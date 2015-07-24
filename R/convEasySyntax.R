@@ -1,8 +1,8 @@
 convEasySyntax  <- function(linesMat){
 	lcode <- getInlineComments(linesMat)
 	linesOut <- lcode$sansInLineCom
-	
-	
+
+
 	linesOut <- convSymbols(linesOut)
 	linesOut <- convSemiColon(linesOut)
 	linesOut <- convIfElse(linesOut)
@@ -11,7 +11,7 @@ convEasySyntax  <- function(linesMat){
 	}
 
 	linesOut <- convEqualsArrow(linesOut)
-	
+
 	linesOut <- paste0(linesOut, lcode$inLineCom)
 	return(linesOut)
 }
@@ -23,7 +23,7 @@ convSemiColon <- function(linesMat){
 convEqualsArrow <- function(linesMat){
 
 	linesOut <- gsub(" = ", " <- ", linesMat)
-	
+
 
 	#filter all the other cases matlab uses =
 	logStrs <- c("==", "<=", ">=", "!=")
@@ -39,23 +39,23 @@ convLoops <- function(linesMat, loopStr){
 	loopLines <- paraAroundThings(linesMat[loopSet], loopStr)
 	loopLines <- gsub(" = ", " in ", loopLines)
 	loopLines <- gsub("=", " in ", loopLines)
-	
+
 	linesMat[loopSet] <- loopLines
 	return(linesMat)
 
 }
 
 convIfElse  <- function(linesMat){
-	
+
 	elseSet <- grepl("else$", linesMat)
 	ifelseSet <- grepl("elseif", linesMat)
 	ifSet <- grepl("if", linesMat)
-	
+
 	linesMat[ifelseSet] <- gsub("elseif", "} else if", linesMat[ifelseSet])
 	linesMat[elseSet] <- gsub("else", "} else {", linesMat[elseSet])
-	
+
 	linesMat[ifSet] <- paraAroundThings(linesMat[ifSet], "if")
-	
+
 	return(linesMat)
 }
 
@@ -68,23 +68,23 @@ getInlineComments <- function(linesMat){
 	lout <- list()
 	lout$inLineCom <- rep('', length(linesMat))
 	lout$sansInLineCom <- linesMat
-	
+
 	endInd <- regexpr("\\;", linesMat)
 	percentInd <- regexpr("\\%", linesMat)
 	inLineSet <- (endInd < percentInd)
-	
-	
+
+
 	lout$inLineCom[inLineSet] <- substr(linesMat[inLineSet],
 																			percentInd[inLineSet],
 																			nchar(linesMat[inLineSet]))
 	lout$inLineCom <- gsub("\\%", "#", lout$inLineCom)
-	
-	lout$sansInLineCom[inLineSet] <- 
+
+	lout$sansInLineCom[inLineSet] <-
 		trimWhite(substr(linesMat[inLineSet],
 										 1,
-										 percentInd[inLineSet] - 1), 
+										 percentInd[inLineSet] - 1),
 							"end")
-	
+
 	return(lout)
 }
 
@@ -94,7 +94,7 @@ paraAroundThings <- function(sin, type){
 	aftThing <- substr(sin, startChar, lastChar)
 	firstLet <- regexpr("\\w", aftThing)
 	firstPara <- regexpr("\\(", aftThing)
-	
+
 	badSet <- (firstLet < firstPara | firstPara < 0)
 	sin[badSet] <- paste0(
 		gsub(paste0(type, ' '), paste0(type, " ("), sin[badSet]),
@@ -102,15 +102,5 @@ paraAroundThings <- function(sin, type){
 	sin[!badSet] <- gsub(paste0(type, "\\("), paste(type, '('), sin[!badSet])
 	sin[!badSet] <- paste0(sin[!badSet], '{')
 	return(sin)
-	
-}
 
-trimWhite <- function(sin, where = "both"){
-	return(switch(where,
-								beg = gsub("^\\s+", "", sin),
-								end = gsub("\\s+$", "", sin),
-								both = gsub("^\\s+|\\s+$", "", sin)
-	))
-	
-	
 }
