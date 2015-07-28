@@ -27,8 +27,8 @@ convEqualsArrow <- function(linesMat){
 
 	#filter all the other cases matlab uses =
 	logStrs <- c("==", "<=", ">=", "!=")
-	logSet <- vapply(logStrs, function(x){ grepl(x, linesMat) },
-		rep(TRUE, length(linesMat)))
+	logSet <- asRightMatrix(vapply(logStrs, function(x){ grepl(x, linesMat) },
+		rep(TRUE, length(linesMat))))
 	logSet <- as.logical(rowSums(logSet))
 	linesOut[!logSet] <- gsub("=", " <- ", linesOut[!logSet])
 	return(linesOut)

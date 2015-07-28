@@ -1,20 +1,21 @@
 convFunctionsCalls <- function(linesMat, dict){
 	linesDes <- linesMat
-	assignInd <- gregexpr("[<]\\-", linesMat)
-	leftParInd <- gregexpr("\\(", linesMat)
-	potSet <- (assignInd > leftParInd)
+	assignInd <- regexpr("[<]\\-", linesMat)
+	leftParList <- gregexpr("\\(", linesMat)
+	leftParInd <- vapply(leftParList, function(x){ rev(x)[1] }, 1)
+	potSet <- (assignInd < leftParInd)
 
-	funName <- getBetween(linesMat[potSet], '- ', '(')
+	funName <- getBetween(linesMat[potSet], '-\\s', '(')
 
 	inDictSet <- funName %isKey% dict
 	potSet[!inDictSet]<- FALSE
 
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
-	argMaps <- dict$funName[inDictSet]
+	argMaps <- dict[funName][inDictSet]
 
-	rArgs <- mapply(function(marg, fun){ fun(marg) }, matArgs, argMaps)
+	rArgs <- mapply(function(marg, fun){ fun(trimWhite(marg)) }, matArgs, argMaps)
 
-	linesDes[potSet] <- getBetween(linesMat[potSet], '- ', ')', rArgs)
+	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
 
 	return(linesDes)
 }
@@ -78,6 +79,6 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 }
 
-`isKey` <- function(vals, ldict){
+`%isKey%` <- function(vals, ldict){
 	return(is.element(names(ldict), vals))
 }

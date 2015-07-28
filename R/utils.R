@@ -3,11 +3,14 @@ getBetween <- function(sin, left, right, insertChar = NULL){
 	rightPos <- regexpr(paste0("\\", right), sin)
 
 	if(is.null(insertChar)){
-		cap <- substr(sin, leftPos + 1 , rightPos - 1)
+		cap <- substr(sin,
+			leftPos + attr(leftPos, "match.length"),
+			rightPos - attr(leftPos, "match.length")
+		)
 		return(trimWhite(cap))
 	} else {
 		newStr <- paste0(
-			substr(sin, 1, leftPos),
+			substr(sin, 1, leftPos + attr(leftPos, "match.length") - 1 ),
 			insertChar,
 			substr(sin, rightPos, nchar(sin))
 		)
@@ -21,4 +24,8 @@ trimWhite <- function(sin, where = "both"){
                 end = gsub("\\s+$", "", sin),
                 both = gsub("^\\s+|\\s+$", "", sin)
 	))
+}
+
+asRightMatrix <- function(vin){
+	if(!is.matrix(vin)){ t(as.matrix(vin)) }
 }

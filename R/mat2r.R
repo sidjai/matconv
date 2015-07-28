@@ -48,8 +48,7 @@ mat2r <- function(inMat,
 	}
 
 	if(!is.null(funcConverters)){
-		funcDict <- makeDict(funcConverters)
-		linesDes <- convFunc(linesDes, funcDict)
+		linesDes <- convFunctionsCalls(linesDes, funcConverters)
 	}
 
 
