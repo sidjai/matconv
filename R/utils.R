@@ -5,7 +5,7 @@ getBetween <- function(sin, left, right, insertChar = NULL){
 	if(is.null(insertChar)){
 		cap <- substr(sin,
 			leftPos + attr(leftPos, "match.length"),
-			rightPos - attr(leftPos, "match.length")
+			rightPos - 1
 		)
 		return(trimWhite(cap))
 	} else {
@@ -27,5 +27,9 @@ trimWhite <- function(sin, where = "both"){
 }
 
 asRightMatrix <- function(vin){
-	if(!is.matrix(vin)){ t(as.matrix(vin)) }
+	if(!is.matrix(vin)){ 
+		t(as.matrix(vin))
+	} else {
+		vin
+	}
 }
