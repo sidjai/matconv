@@ -1,0 +1,40 @@
+linspace:seq,1,2,len = %3
+logspace:10^seq,1,2,len = %3
+zeros:rep,0L,2
+ones:rep,1L,2
+eye:diag,1
+diag:diag,1,nrow = length(%1)
+repmat:kronecker(matrix, 1L, 2, %3),1
+hilb:matrix::Hilbert,1
+reshape:array,1,c(%...)
+mod: , 1, %%, 2
+ceil:ceiling,1
+fix:trunc,1
+erf: ,2 * pnorm(%1 * sqrt(2)) - 1
+erfc: ,2 * pnorm(%1 * sqrt(2), lower = FALSE) - 1
+erfinv: , qnorm((1 + %1)/2) / sqrt(2)
+nchoosek:choose, 1, 2
+angle:Arg, 1
+conj:Conj, 1
+real:Re, 1
+imag:Im, 1
+dot:sum, %1 * %2
+cross:pracma::cross, 1, 2
+inv:solve, 1
+trace: sum, diag(%1)
+rank: , qr(%1)$rank
+lu: , expand(lu(Matrix(%1))) --out L, U, P
+svd:svd, 1 --out u, v, diag(d)
+cond--if 2 == 1L:1/rcond, 1, '1'
+cond--if 2 == 2L:kappa, 1, exact = TRUE
+cond--if 2 == infL:1/rcond, 1, 'I'
+null:pracma::null, 1
+orth:pracma::orth, 1
+std:sd, 1
+corr::cor, 1, 2, method = %4 --not-req 3
+expm: ,expm(Matrix::Matrix(%1))
+size:
+
+
+##symbols add: .*, ', bitcmp -> bitwNot, bitand -> bitwAnd, bitor -> bitwOr, bitxor -> bitwXor, bitshift -> bitwShiftL
+
