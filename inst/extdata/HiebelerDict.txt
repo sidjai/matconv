@@ -5,7 +5,7 @@ ones:rep,1L,2
 eye:diag,1
 diag:diag,1,nrow = length(%1)
 repmat:kronecker(matrix, 1L, 2, %3),1
-hilb:matrix::Hilbert,1
+hilb:Matrix::Hilbert,1
 reshape:array,1,c(%...)
 mod: , 1, %%, 2
 ceil:ceiling,1
@@ -23,7 +23,7 @@ cross:pracma::cross, 1, 2
 inv:solve, 1
 trace: sum, diag(%1)
 rank: , qr(%1)$rank
-lu: , expand(lu(Matrix(%1))) --out L, U, P
+lu: , expand(lu(Matrix::Matrix(%1))) --out L, U, P
 svd:svd, 1 --out u, v, diag(d)
 cond--if 2 == 1L:1/rcond, 1, '1'
 cond--if 2 == 2L:kappa, 1, exact = TRUE
@@ -33,8 +33,53 @@ orth:pracma::orth, 1
 std:sd, 1
 corr::cor, 1, 2, method = %4 --not-req 3
 expm: ,expm(Matrix::Matrix(%1))
-size:
-
+size--if 1:dim, 1
+size--if 2: ,dim(%1)[%2]
+numel:length, 1
+sort--if length(out) == 2:sort, 1, index.return = TRUE --out x ix
+sortrows--if 1: ,%1[order(%1[,1]),]
+sortrows--if 2: ,%1[order(%1[,%2]),]
+sortrows--if length(out) ==2: ,list(order(%1[,1]),%1[,1]) --out [[1]] [[2]]
+find--if length(out) == 1L: which, 1
+find--if length(out) == 2L: which, 1, arr.ind = TRUE --out-m [ ,1] [ ,2]
+hist:hist, 1, seq(min(%1), max(%1), length.out = %2 +1), plot = FALSE --out mids counts
+conv:convolve, 1, rev(%2), type = 'open'
+roots: polyroot, rev(%1)
+fminbnd: , optimize(, 1, c(%1, %2), )$minimum
+quad: integrate, 1, 2, 3
+rand--if 1 == 1L:runif, 2
+rand--if 1 == 2L:runif, 1
+rand--if finally:matrix, runif(%1 * %2), %1
+randperm:sample, 1
+binornd:rbinom, 1L, 1, 2
+poissrnd:rpois, 1L, 1
+exprnd: rexp, 1L, 1/%1
+normrnd:rnorm, 1L, 1, 2
+mrnd--if 2:rmultinom, 1L, 1, 2
+mrnd--if 3:rmultinom, 3, 1, 2
+binopdf:dbinom, 1, 2, 3
+poisspdf:dpois, 1, 2
+exppdf:dexp, 1, 1/%1
+unifpdf:dunif, 1, 2, 3
+mnpdf:dmultinom, 1, prob = %2
+binocdf:pbinom, 1, 2, 3
+poisscdf:ppois, 1, 2
+expcdf:pexp, 1, 1/%1
+normcdf:pnorm, 1, 2, 3
+unifcdf:punif, 1, 2, 3
+unidcdf:, (%1 >=) * min(floor(%1), %2)/%2
+mkdir:dir.create, '%1'
+cd:setwd, '%1'
+who:ls
+whos:ls.str
+openvar:fix, 1
+clear:rm 1 --space-sep
+disp:cat, 1
+input:readline, 1
+regexp:, gregexpr(, %1, %2)[[1]]
+pause:Sys.sleep, 1
+error:stop, 1
+eval:eval, parse(text = %1)
 
 ##symbols add: .*, ', bitcmp -> bitwNot, bitand -> bitwAnd, bitor -> bitwOr, bitxor -> bitwXor, bitshift -> bitwShiftL
-
+##continue -> next
