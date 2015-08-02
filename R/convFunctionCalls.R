@@ -62,12 +62,25 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 		swiSet <- grepl("^[0-9]+$", sargs)
 		literalNumSet <- grepl("^[0-9]+L$", sargs)
-		stringSet <- !literalNumSet & !swiSet
+		strInsertSet <- grepl("\\%[0-9]", sargs)
+		stringSet <- !literalNumSet & !swiSet & !strInsertSet
 
 		return(function(matArg){
 			rargs <- NULL
 			rargs[swiSet] <- matArg[as.integer(sargs[swiSet])]
 			rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
+			for(iar in which(strInsertSet)){
+				arg <- sargs[iar]
+				ins <- NULL
+				ind <- as.numeric(getBetween(x, '%', ''))
+				while(!is.na(ind)){
+					ins <- c(ins, matArg[ind])
+					arg <- sub("\\%[0-9]", "%c", arg)
+					ind <- as.numeric(getBetween(x, '%', ''))
+				}
+				rargs[iar] <- sprintf(arg, ins)
+			}
+			
 			rargs[stringSet] <- sargs[stringSet]
 
 			return(paste0(rname, '(', paste(rargs, collapse = ", ")))
