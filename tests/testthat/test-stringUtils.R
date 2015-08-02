@@ -44,3 +44,12 @@ test_that("getBetween does insert right with 2 symbols", {
   test_getBetweenLeft(c(7, 8, 13), left = c("(\\[", "[1", "&5"), insertSt = "four")
   test_getBetweenRight(c(7, 9), right = c("]\\)", "&5"), insertSt = "four")
 })
+
+test_that("getBetween does one character default",{
+  test_getBetweenLeft(c(1), left = "")
+  test_getBetweenRight(1, right = "")
+  expect_match(getBetween("asdf(%1)", '%', ''),
+    '1')
+  expect_equal(match(getBetween("asd(%1)sd", '%', '', 'c'),"asd(%c)sd"),
+    1)
+})

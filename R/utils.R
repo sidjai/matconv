@@ -1,6 +1,18 @@
 getBetween <- function(sin, left, right, insertChar = NULL){
-	leftPos <- regexpr(paste0("\\", left), sin)
-	rightPos <- regexpr(paste0("\\", right), sin)
+	
+	if(!nzchar(left)){
+		rightPos <- regexpr(paste0("\\", right), sin)
+		leftPos <- defaultOneChar(rightPos, `-`)
+	} else if(!nzchar(right)){
+		leftPos <- regexpr(paste0("\\", left), sin)
+		rightPos <- defaultOneChar(leftPos, `+`)
+	} else {
+		rightPos <- regexpr(paste0("\\", right), sin)
+		leftPos <- regexpr(paste0("\\", left), sin)
+	}
+
+
+
 
 	if(is.null(insertChar)){
 		cap <- substr(sin,
@@ -27,9 +39,14 @@ trimWhite <- function(sin, where = "both"){
 }
 
 asRightMatrix <- function(vin){
-	if(!is.matrix(vin)){ 
+	if(!is.matrix(vin)){
 		t(as.matrix(vin))
 	} else {
 		vin
 	}
+}
+defaultOneChar <- function(oppsMatch, func){
+	defMatch <- func(oppsMatch, 2)
+	attr(defMatch, "match.length") <- 1
+	return(defMatch)
 }
