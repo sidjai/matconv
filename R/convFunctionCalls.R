@@ -71,16 +71,15 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
 			for(iar in which(strInsertSet)){
 				arg <- sargs[iar]
-				ins <- NULL
-				ind <- as.numeric(getBetween(x, '%', ''))
-				while(!is.na(ind)){
-					ins <- c(ins, matArg[ind])
-					arg <- sub("\\%[0-9]", "%c", arg)
-					ind <- as.numeric(getBetween(x, '%', ''))
+				test <- TRUE
+				while(test){
+					ind <- as.numeric(getBetween(arg, '%', ''))
+					arg <- sub("\\%[0-9]", matArg[ind], arg)
+					test <- grepl("\\%[0-9]", arg)
 				}
-				rargs[iar] <- sprintf(arg, ins)
+				rargs[iar] <- arg
 			}
-			
+
 			rargs[stringSet] <- sargs[stringSet]
 
 			return(paste0(rname, '(', paste(rargs, collapse = ", ")))
