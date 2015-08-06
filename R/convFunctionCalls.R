@@ -55,57 +55,15 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 	keyVal <- strsplit(dictLines, ":")
 	allFunNames <- vapply(keyVal, function(x){ x[1] }, "e")
+	allDictArgs <- vapply(keyVal, function(x){ x[2] }, "e")
 	finFunNames <- unique(allFunNames)
 
 	maps[finFunNames]$flags <- lout$flags
 
-	mapList <- list()
+	argFuns <- lapply(rawDictArgs, function(x){ parseArgs(rawDictArgs) })
+	finArgFuns <-
 
-
-	mapFuns <- lapply(dictLines, function(lin){
-		lout <- parseFlags(lin)
-		lin <- lout$strSansFlags
-		flags <- lout$flags
-
-		keyVal <- strsplit(lin, ":")[[1]]
-
-		sargs <- strsplit(keyVal[2], ',')
-		sargs <- trimWhite(sargs[[1]])
-
-		rname <- sargs[1]
-		sargs <- sargs[-1]
-
-		swiSet <- grepl("^[0-9]+$", sargs)
-		literalNumSet <- grepl("^[0-9]+L$", sargs)
-		strInsertSet <- grepl("\\%[0-9]", sargs)
-		stringSet <- !literalNumSet & !swiSet & !strInsertSet
-
-		return(function(matArg){
-			rargs <- NULL
-			rargs[swiSet] <- matArg[as.integer(sargs[swiSet])]
-			rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
-			for(iar in which(strInsertSet)){
-				arg <- sargs[iar]
-				test <- TRUE
-				while(test){
-					ind <- as.numeric(getBetween(arg, '%', ''))
-					arg <- sub("\\%[0-9]", matArg[ind], arg)
-					test <- grepl("\\%[0-9]", arg)
-				}
-				rargs[iar] <- arg
-			}
-
-			rargs[stringSet] <- sargs[stringSet]
-
-			return(list(
-				rargs = paste0(rname, '(', paste(rargs, collapse = ", ")),
-				flags = flags
-				))
-			})
-		})
-
-	finMapFuns <-
-	maps[finFunNames]$argMap <- finMapFuns
+	maps[finFunNames]$argMap <- finArgFuns
 
 
 	return(maps)
@@ -114,6 +72,41 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 `%isKey%` <- function(vals, ldict){
 	return(is.element(names(ldict), vals))
+}
+
+parseArgs <- function(dictArgs){
+	sargs <- strsplit(dictArgs, ',')
+	sargs <- trimWhite(sargs[[1]])
+
+	rname <- sargs[1]
+	sargs <- sargs[-1]
+
+	swiSet <- grepl("^[0-9]+$", sargs)
+	literalNumSet <- grepl("^[0-9]+L$", sargs)
+	strInsertSet <- grepl("\\%[0-9]", sargs)
+	stringSet <- !literalNumSet & !swiSet & !strInsertSet
+
+	return(function(matArg){
+		rargs <- NULL
+		rargs[swiSet] <- matArg[as.integer(sargs[swiSet])]
+		rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
+		for(iar in which(strInsertSet)){
+			arg <- sargs[iar]
+			test <- TRUE
+			while(test){
+				ind <- as.numeric(getBetween(arg, '%', ''))
+				arg <- sub("\\%[0-9]", matArg[ind], arg)
+				test <- grepl("\\%[0-9]", arg)
+			}
+			rargs[iar] <- arg
+		}
+
+		rargs[stringSet] <- sargs[stringSet]
+
+		return(list(
+			rargs = paste0(rname, '(', paste(rargs, collapse = ", "))
+			))
+	})
 }
 
 parseFlags <- function(sin){
@@ -141,4 +134,11 @@ parseFlags <- function(sin){
 		strSansFlags =sin,
 		flags = flags
 		))
+}
+
+makeFunSwitcher <- function(lFlags){
+
+	return(function(matArgs){
+
+		})
 }
