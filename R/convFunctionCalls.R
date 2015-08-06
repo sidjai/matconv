@@ -60,7 +60,7 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 	maps[finFunNames]$flags <- lout$flags
 
-	argFuns <- lapply(rawDictArgs, function(x){ parseArgs(rawDictArgs) })
+	argFuns <- lapply(rawDictArgs, function(x){ parseArgs(x) })
 	finArgFuns <-
 
 	maps[finFunNames]$argMap <- finArgFuns
@@ -74,8 +74,8 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 	return(is.element(names(ldict), vals))
 }
 
-parseArgs <- function(dictArgs){
-	sargs <- strsplit(dictArgs, ',')
+parseArgs <- function(dictArg){
+	sargs <- strsplit(dictArg, ',')
 	sargs <- trimWhite(sargs[[1]])
 
 	rname <- sargs[1]
@@ -112,31 +112,29 @@ parseArgs <- function(dictArgs){
 parseFlags <- function(dictLines){
 	possFlags <- c("if", "out", "space-sep", "not-req")
 	flags <- list()
+	strSansFlags <- dictLines
 
 	#separate flags
-	
-	for(lin in dictLines){
-	div <- regexpr("[:]", lin)
+	stFlag <- gregexpr("\\-\\-", sin)
+	stDiv <- gregexpr("[:]", lin)
+	flagSet <- vapply(stfind, function(x){ x[1] > 0 }, TRUE)
+	for(ind in which(flagSet]){
+		left <- stFlag[ind] + 2
+		right <- ifelse(stFlag[ind] > stDiv[ind],
+			nchar(dictLines[ind]),
+			stDiv[ind])
 
-	while(grepl("\\-\\-", sin)){
-		pind <- regexpr("\\-\\-", sin)
-		left <- pind + 2
-		right <- ifelse(pind > div, nchar(sin), div)
-
-		flagStr <- substr(sin, left, right)
-		fargs <- strsplit(sin, ' ')[[1]]
-		
-		sin <- paste0(
-			substr(sin, 1 , left),
-			substr(sin, right, nchar(sin))
-			)
+		flagStr[[ind]] <- mapply(function(lt, rt){
+			substr(strSansFlags[ind], lt, rt) <- ''
+			substr(dictLines[ind], lt, rt)
+		}, left, right)
 	}
 
+	#make flags
 
-	return(list(
-		strSansFlags = sin,
-		flags = flags
-		))
+
+
+	return(list(strSansFlags,flags))
 }
 
 makeFunSwitcher <- function(lFlags){
