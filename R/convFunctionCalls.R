@@ -13,7 +13,7 @@ convFunctionsCalls <- function(linesMat, dict){
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
 	argMaps <- dict[funName][inDictSet]
 
-	rArgs <- mapply(function(marg, fun){ fun(trimWhite(marg)) }, matArgs, argMaps)
+	rArgs <- mapply(function(marg, fun){ fun(trimWhite(marg))$rargs }, matArgs, argMaps)
 
 	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
 
@@ -48,13 +48,28 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			"or a file with the dictionaries", sep = ", "))
 	}
 
-	mapList <- list()
+	maps <- list()
+
+	lout <- parseFlags(dictLines)
+	dictLines <- lout$strSansFlags
+
 	keyVal <- strsplit(dictLines, ":")
-	funNames <- vapply(keyVal, function(x){ x[1] }, "e")
-	funVals <- vapply(keyVal, function(x){ x[2] }, "e")
+	allFunNames <- vapply(keyVal, function(x){ x[1] }, "e")
+	finFunNames <- unique(allFunNames)
+
+	maps[finFunNames]$flags <- lout$flags
+
+	mapList <- list()
+
 
 	mapFuns <- lapply(dictLines, function(lin){
-		sargs <- strsplit(funVals, ',')
+		lout <- parseFlags(lin)
+		lin <- lout$strSansFlags
+		flags <- lout$flags
+
+		keyVal <- strsplit(lin, ":")[[1]]
+
+		sargs <- strsplit(keyVal[2], ',')
 		sargs <- trimWhite(sargs[[1]])
 
 		rname <- sargs[1]
@@ -82,15 +97,48 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 
 			rargs[stringSet] <- sargs[stringSet]
 
-			return(paste0(rname, '(', paste(rargs, collapse = ", ")))
+			return(list(
+				rargs = paste0(rname, '(', paste(rargs, collapse = ", ")),
+				flags = flags
+				))
 			})
 		})
 
-	names(mapFuns) <- funNames
-	return(mapFuns)
+	finMapFuns <-
+	maps[finFunNames]$argMap <- finMapFuns
+
+
+	return(maps)
 
 }
 
 `%isKey%` <- function(vals, ldict){
 	return(is.element(names(ldict), vals))
+}
+
+parseFlags <- function(sin){
+	flags <- list()
+	div <- regexpr("[:]", sin)
+
+	while(grepl("\\-\\-", sin)){
+		pind <- regexpr("\\-\\-", sin)
+		left <- pind + 2
+		right <- ifelse(pind > div, nchar(sin), div)
+
+		flagStr <- substr(sin, left, right)
+		fargs <- strsplit(sin, ' ')
+
+		flagName <-
+		flags[flagName] <-
+
+		sin <- paste0(
+			substr(sin, 1 , left),
+			substr(sin, right, nchar(sin))
+			)
+	}
+
+	return(list(
+		strSansFlags =sin,
+		flags = flags
+		))
 }
