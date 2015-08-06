@@ -109,9 +109,14 @@ parseArgs <- function(dictArgs){
 	})
 }
 
-parseFlags <- function(sin){
+parseFlags <- function(dictLines){
+	possFlags <- c("if", "out", "space-sep", "not-req")
 	flags <- list()
-	div <- regexpr("[:]", sin)
+
+	#separate flags
+	
+	for(lin in dictLines){
+	div <- regexpr("[:]", lin)
 
 	while(grepl("\\-\\-", sin)){
 		pind <- regexpr("\\-\\-", sin)
@@ -119,19 +124,17 @@ parseFlags <- function(sin){
 		right <- ifelse(pind > div, nchar(sin), div)
 
 		flagStr <- substr(sin, left, right)
-		fargs <- strsplit(sin, ' ')
-
-		flagName <-
-		flags[flagName] <-
-
+		fargs <- strsplit(sin, ' ')[[1]]
+		
 		sin <- paste0(
 			substr(sin, 1 , left),
 			substr(sin, right, nchar(sin))
 			)
 	}
 
+
 	return(list(
-		strSansFlags =sin,
+		strSansFlags = sin,
 		flags = flags
 		))
 }
