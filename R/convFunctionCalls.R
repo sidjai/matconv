@@ -110,36 +110,140 @@ parseArgs <- function(dictArg){
 }
 
 parseFlags <- function(dictLines){
-	possFlags <- c("if", "out", "space-sep", "not-req")
-	flags <- list()
+
+
+	flags <- lapply(1:length(dictLines), function(x){ list() })
 	strSansFlags <- dictLines
 
 	#separate flags
 	stFlag <- gregexpr("\\-\\-", sin)
 	stDiv <- gregexpr("[:]", lin)
-	flagSet <- vapply(stfind, function(x){ x[1] > 0 }, TRUE)
-	for(ind in which(flagSet]){
+	flagNums <- which(vapply(stFlag, function(x){ x[1] > 0 }, TRUE))
+
+	for(ind in flagNums){
 		left <- stFlag[ind] + 2
 		right <- ifelse(stFlag[ind] > stDiv[ind],
 			nchar(dictLines[ind]),
-			stDiv[ind])
+			stDiv[ind]
+		)
 
 		flagStr[[ind]] <- mapply(function(lt, rt){
 			substr(strSansFlags[ind], lt, rt) <- ''
 			substr(dictLines[ind], lt, rt)
 		}, left, right)
+
+		flagType[[ind]] <- match(flagStr[[ind]], possFlags)
 	}
 
-	#make flags
+	#make flags and funcSwitchers
+	matName <- vapply(strsplit(strSansFlags, ":"), function(x){ x[1] },"e")
+	dupsMat <- (duplicated(matName) | duplicated(matName, fromLast = TRUE))
+
+	fnum <- 1
+	while(fnum <= length(flagNums)){
+		ind <- flagNums(fnum)
+
+		if(dupsMat[ind]){
+			lastDup <- which(!dupsMat[ind:length(flagNums)])[1] - 1
+
+			flags[[ind]] <- lapply(ind:lastDup, function(x){
+				makeFlag(flagStr[[x]], makeSwitch = FALSE)
+			})
+
+			flags[[ind]]$multSwitch <- makeFunSwitcher(flagStr[ind:lastDup])
+			fnum <- lastDup
+		} else {
+			flags[[ind]] <- makeFlag(flagStr[[ind]])
+		}
+
+
+
+		fnum <- fnum + 1
+	}
+
 
 
 
 	return(list(strSansFlags,flags))
 }
 
+makeFlag <- function(vin, makeSwitch = TRUE){
+	flag <- list()
+	possFlags <- c("if", "out", "space-sep", "not-req")
+
+	para <- strsplit(vin, " ")
+	flagName <- vapply(para, function(x){ x[1] }, "e")
+
+
+	vapply(vin, function(x){
+		para <- strsplit(x, " ")[[1]]
+		fladName <- para[1]
+		if(flagName == "if" && makeSwitch){
+			flag$multSwitch <- makeFunSwitcher(list(x))
+		} else if (flagName == "out"){
+			flag$varOut <- para[-1]
+		} else if (flagName == "space-sep"){
+			flag$spaceSepMatArgs <- TRUE
+		} else if (flagName == "not-req"){
+			flag$argNotReq <- as.integer(para[-1])
+		} else {
+			stop(paste("The flag:", quote(x), "is indecipherable", sep = "\n"))
+		}
+
+		TRUE
+	}, TRUE)
+
+	return(flag)
+}
+
 makeFunSwitcher <- function(lFlags){
 
-	return(function(matArgs){
+	finallyInd <- NULL
+	lengthOutVec <- lengthVec <- rep(NULL, length(lFlags))
+	matMap <- lapply(1:length(lFlags), function(x){
+		list(arg = NULL, val = NULL)
+	})
 
+	for(dictNum in 1:length(lFlags), function(x){
+		para <- strsplit(lFlags[[dictNum]][1], ' ')[[1]][-1]
+		if(length(para == 1)){
+			if(para[1] == "finally"){
+				finallyInd <- dictNum
+			} else {
+				lengthVec[dictNum] <- as.integer(para[1])
+			}
+		} else {
+			if(para[1] == "length(out)"){
+				lengthOutVec[as.integer(para[3])] <- dictNum
+			} else {
+				metMap[[dictNum]]$arg <- para[1]
+				metMap[[dictNum]]$val <- gsub("L", "", para[3])
+				rbind(matMap, c(as.integer(para[1]),))
+				metMap[[as.integer(para[1])]][[para[3]]] <- dictNum
+			}
+		}
+	}
+
+	return(function(matArgs, numOut = 1){
+		if(numOut > 1){
+			useInd <- which(lengthOutVec == numOut)
+		}
+
+		useInd <- which(lengthVec == length(matArgs))
+		test <- vapply(metMap, function(mp){
+			matArgs[mp$arg] == mp$val
 		})
+
+		useInd <- which(test)
+		if(is.null(useInd)){
+			if(!is.null(finallyInd)){
+				useInd <- finallyInd
+			} else {
+				stop(paste("Do not have rule that supports:" , matArgs))
+			}
+
+		}
+		return(useInd)
+
+	})
 }
