@@ -199,14 +199,14 @@ makeFlag <- function(vin, makeSwitch = TRUE){
 makeFunSwitcher <- function(lFlags){
 
 	finallyInd <- NULL
-	lengthOutVec <- lengthVec <- rep(NULL, length(lFlags))
+	lengthOutVec <- lengthVec <- rep(NA, length(lFlags))
 	matMap <- lapply(1:length(lFlags), function(x){
 		list(arg = NULL, val = NULL)
 	})
 
-	for(dictNum in 1:length(lFlags), function(x){
+	for(dictNum in 1:length(lFlags)){
 		para <- strsplit(lFlags[[dictNum]][1], ' ')[[1]][-1]
-		if(length(para == 1)){
+		if(length(para) == 1){
 			if(para[1] == "finally"){
 				finallyInd <- dictNum
 			} else {
@@ -214,36 +214,37 @@ makeFunSwitcher <- function(lFlags){
 			}
 		} else {
 			if(para[1] == "length(out)"){
-				lengthOutVec[as.integer(para[3])] <- dictNum
+				lengthOutVec[dictNum] <- as.integer(para[3])
 			} else {
-				metMap[[dictNum]]$arg <- para[1]
-				metMap[[dictNum]]$val <- gsub("L", "", para[3])
-				rbind(matMap, c(as.integer(para[1]),))
-				metMap[[as.integer(para[1])]][[para[3]]] <- dictNum
+				matMap[[dictNum]]$arg <- para[1]
+				matMap[[dictNum]]$val <- gsub("L", "", para[3])
 			}
 		}
 	}
 
 	return(function(matArgs, numOut = 1){
+		useInd <- NULL
 		if(numOut > 1){
 			useInd <- which(lengthOutVec == numOut)
 		}
 
-		useInd <- which(lengthVec == length(matArgs))
-		test <- vapply(metMap, function(mp){
-			matArgs[mp$arg] == mp$val
-		})
+		useInd <- c(useInd, which(lengthVec == length(matArgs)))
 
-		useInd <- which(test)
-		if(is.null(useInd)){
+		test <- vapply(matMap, function(mp){
+			check <- matArgs[as.integer(mp$arg)] == mp$val
+			if(length(check) == 0) check <- FALSE
+			return(check)
+		}, TRUE)
+		useInd <- c(useInd, which(test))
+
+		if(length(useInd) == 0){
 			if(!is.null(finallyInd)){
 				useInd <- finallyInd
 			} else {
 				stop(paste("Do not have rule that supports:" , matArgs))
 			}
-
 		}
-		return(useInd)
 
+		return(useInd[1])
 	})
 }
