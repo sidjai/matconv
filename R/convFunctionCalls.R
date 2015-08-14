@@ -1,4 +1,4 @@
-convFunctionsCalls <- function(linesMat, dict){
+convFunctionsCalls <- function(linesMat, maps){
 	linesDes <- linesMat
 	assignInd <- regexpr("[<]\\-", linesMat)
 	leftParList <- gregexpr("\\(", linesMat)
@@ -7,13 +7,24 @@ convFunctionsCalls <- function(linesMat, dict){
 
 	funName <- getBetween(linesMat[potSet], '-\\s', '(')
 
-	inDictSet <- funName %isKey% dict
-	potSet[!inDictSet]<- FALSE
+	inMapsSet <- funName %isKey% maps
+	potSet[!inMapsSet]<- FALSE
 
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
-	argMaps <- dict[funName][inDictSet]
+	argMaps <- maps[funName][inMapsSet]
 
-	rArgs <- mapply(function(marg, fun){ fun(trimWhite(marg))$rargs }, matArgs, argMaps)
+	rArgs <- mapply(function(marg, mp){
+		marg <- trimWhite(marg)
+		if("argMap" %in% mp){
+			out <- mp$argMap(marg)$rargs
+		} else {
+			#Multiple dictionaries per matlab function
+			#use fun switcher
+			rightDict <- mp$flags$multSwitch(marg)
+			out <- mp[[rightDict]]$argMap(marg)$rargs
+		}
+		return(out)
+	}, matArgs, argMaps)
 
 	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
 
@@ -61,10 +72,27 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 	maps[finFunNames]$flags <- lout$flags
 
 	argFuns <- lapply(rawDictArgs, function(x){ parseArgs(x) })
-	finArgFuns <-
 
-	maps[finFunNames]$argMap <- finArgFuns
+	dupsMat <- (duplicated(allFunNames) | duplicated(allFunNames, fromLast = TRUE))
 
+	anum <- 1
+	while(anum <= length(argFuns)){
+
+		if(dupsMat[anum]){
+			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 1
+
+			vapply(anum:lastDup, function(x){
+				maps[[anum]][[x]]$argMap <- argFuns[[x]]
+				TRUE
+			}, TRUE)
+
+			anum <- lastDup
+		} else {
+			maps[[anum]]$argMap <- argFuns[[anum]]
+		}
+
+		anum <- anum + 1
+	}
 
 	return(maps)
 
