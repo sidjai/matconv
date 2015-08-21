@@ -61,7 +61,7 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			"or a file with the dictionaries", sep = ", "))
 	}
 
-	maps <- list()
+	
 
 	lout <- parseFlags(dictLines)
 	dictLines <- lout$strSansFlags
@@ -71,7 +71,9 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 	allDictArgs <- vapply(keyVal, function(x){ x[2] }, "e")
 	finFunNames <- unique(allFunNames)
 
-	
+	maps <- lapply(1:length(finFunNames), function(x){
+		list(argMap = list(), flags = list()) })
+	names(maps) <- finFunNames
 
 	argFuns <- lapply(allDictArgs, function(x){ parseArgs(x) })
 
@@ -96,8 +98,9 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 		anum <- anum + 1
 	}
 	
-	
-	maps[finFunNames]$flags <- lout$flags
+	for(nm in finFunNames){
+		maps[[nm]]$flags <- lout$flags[[nm]]
+	}
 
 	return(maps)
 
@@ -145,15 +148,15 @@ parseArgs <- function(dictArg){
 parseFlags <- function(dictLines){
 
 
-	flags <- flagStr <- lapply(1:length(dictLines), function(x){ list() })
+	flagStr <- lapply(1:length(dictLines), function(x){ list() })
 	strSansFlags <- dictLines
 
 	#separate flags
 	stFlag <- gregexpr("\\-\\-", dictLines)
 	stDiv <- gregexpr("[:]", dictLines)
-	flagNums <- which(vapply(stFlag, function(x){ x[1] > 0 }, TRUE))
+	flagSet <- vapply(stFlag, function(x){ x[1] > 0 }, TRUE)
 	
-	for(ind in flagNums){
+	for(ind in which(flagSet)){
 		left <- stFlag[[ind]] + 2
 		right <- ifelse(stFlag[[ind]] > stDiv[[ind]],
 			nchar(dictLines[ind]),
@@ -174,36 +177,32 @@ parseFlags <- function(dictLines){
 
 	#make flags and funcSwitchers
 	matName <- vapply(strsplit(strSansFlags, ":"), function(x){ x[1] },"e")
-	dupsMat <- (duplicated(matName) | duplicated(matName, fromLast = TRUE))
+	
+	uniMatName <- unique(matName)
+	dupsSet <- vapply(uniMatName, function(x){
+		sum(grepl(x, matName)) > 1
+	}, TRUE)
+	
+	matNameswFlags <- unique(matName[flagSet])
+	uniFlagNums <- match(matNameswFlags, uniMatName)
+	
+	flags <- lapply(1:length(uniMatName), function(x){ list() })
+	names(flags) <- uniMatName
 
-	fnum <- 1
-	while(fnum <= length(flagNums)){
-		ind <- flagNums[fnum]
-
-		if(dupsMat[ind]){
-			lastDup <- which(!dupsMat[ind:length(flagNums)])[1] - 1
-			if(is.na(lastDup)){
-				#All dups
-				lastDup <- length(dupsMat)
-			}
-
-			flags[[ind]] <- lapply(ind:lastDup, function(x){
+	for(unind in uniFlagNums){
+		
+		wantVec <- grep(uniMatName[unind], matName)
+		if(dupsSet[unind]){
+			
+			flags[[unind]] <- lapply(wantVec, function(x){
 				makeFlag(flagStr[[x]], makeSwitch = FALSE)
 			})
-
-			flags[[ind]]$multSwitch <- makeFunSwitcher(flagStr[ind:lastDup])
-			fnum <- lastDup
+			flags[[unind]]$multSwitch <- makeFunSwitcher(flagStr[wantVec])
+			
 		} else {
-			flags[[ind]] <- makeFlag(flagStr[[ind]])
+			flags[[unind]] <- makeFlag(flagStr[[wantVec]])
 		}
-
-
-
-		fnum <- fnum + 1
 	}
-
-
-
 
 	return(mget(c("strSansFlags", "flags")))
 }

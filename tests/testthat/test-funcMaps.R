@@ -34,13 +34,13 @@ test_that("Flag switching integrates", {
 		"matsort--if 2:sort, 2, 1",
 		"matsort--if 3:sort, 3")
 	example <- c(
-		"thing <- sort(asdf, hjkl)",
-		"thing <- sort(asdf, hjkl, omg)")
+		"thing <- matsort(asdf, hjkl)",
+		"thing <- matsort(asdf, hjkl, omg)")
 	map <- makeMaps(dict)
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
-		"thing <- matsort(hjkl, asdf)")
+		"thing <- sort(hjkl, asdf)")
 	expect_equal(result[2],
-		"thing <- matsort(omg)")
+		"thing <- sort(omg)")
 	
 })
