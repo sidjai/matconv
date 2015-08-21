@@ -15,7 +15,7 @@ convFunctionsCalls <- function(linesMat, maps){
 
 	rArgs <- mapply(function(marg, mp){
 		marg <- trimWhite(marg)
-		if("argMap" %in% mp){
+		if("argMap" %in% names(mp)){
 			out <- mp$argMap(marg)$rargs
 		} else {
 			#Multiple dictionaries per matlab function
@@ -69,30 +69,33 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 	allDictArgs <- vapply(keyVal, function(x){ x[2] }, "e")
 	finFunNames <- unique(allFunNames)
 
-	maps[finFunNames]$flags <- lout$flags
+	
 
-	argFuns <- lapply(rawDictArgs, function(x){ parseArgs(x) })
+	argFuns <- lapply(allDictArgs, function(x){ parseArgs(x) })
 
 	dupsMat <- (duplicated(allFunNames) | duplicated(allFunNames, fromLast = TRUE))
 
 	anum <- 1
 	while(anum <= length(argFuns)){
-
+		nam <- allFunNames[anum]
 		if(dupsMat[anum]){
 			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 1
 
 			vapply(anum:lastDup, function(x){
-				maps[[anum]][[x]]$argMap <- argFuns[[x]]
+				maps[[nam]][[x]]$argMap <- argFuns[[x]]
 				TRUE
 			}, TRUE)
 
 			anum <- lastDup
 		} else {
-			maps[[anum]]$argMap <- argFuns[[anum]]
+			maps[[nam]]$argMap <- argFuns[[anum]]
 		}
 
 		anum <- anum + 1
 	}
+	
+	
+	maps[finFunNames]$flags <- lout$flags
 
 	return(maps)
 
@@ -144,8 +147,8 @@ parseFlags <- function(dictLines){
 	strSansFlags <- dictLines
 
 	#separate flags
-	stFlag <- gregexpr("\\-\\-", sin)
-	stDiv <- gregexpr("[:]", lin)
+	stFlag <- gregexpr("\\-\\-", dictLines)
+	stDiv <- gregexpr("[:]", dictLines)
 	flagNums <- which(vapply(stFlag, function(x){ x[1] > 0 }, TRUE))
 
 	for(ind in flagNums){
@@ -192,7 +195,7 @@ parseFlags <- function(dictLines){
 
 
 
-	return(list(strSansFlags,flags))
+	return(mget(c("strSansFlags", "flags")))
 }
 
 makeFlag <- function(vin, makeSwitch = TRUE){
