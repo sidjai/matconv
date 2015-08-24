@@ -13,7 +13,11 @@ convFunctionsCalls <- function(linesMat, maps){
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
 	argMaps <- maps[funName][inMapsSet]
 
-	rArgs <- mapply(function(marg, mp){
+	linesDes[potSet] <- mapply(function(marg, mp, lin){
+		
+		if(!(is.null(mp$flags$spaceSepMatArgs))){
+			marg <- strsplit(lin, " ")[[1]]
+		}
 		marg <- trimWhite(marg)
 		
 		if(length(mp$argMap) == 1){
@@ -24,9 +28,24 @@ convFunctionsCalls <- function(linesMat, maps){
 			useMapInd <- mp$flags$multSwitch(marg)
 		}
 		
-		out <- mp$argMap[[useMapInd]](marg)$rargs
+		rargs <- mp$argMap[[useMapInd]](marg)$rargs
+		
+		#Use other flags
+		if(!is.null(mp$flags$varOut)){
+			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
+			addCalls <- paste(
+				paste0(mp$flags$varOut, " <- lout$", reqVars),
+				collapse = "; ")
+			out <- sprintf("lout <- %s); %s",
+				rargs,
+				addCalls)
+			
+		} else {
+			out <- getBetween(lin, '-\\s', ')', rargs)
+		}
+		
 		return(out)
-	}, matArgs, argMaps)
+	}, matArgs, argMaps, linesDes[potSet])
 
 	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
 
@@ -222,8 +241,6 @@ makeFlag <- function(vin, makeSwitch = TRUE){
 			flag$varOut <- para[-1]
 		} else if (flagName == "space-sep"){
 			flag$spaceSepMatArgs <- TRUE
-		} else if (flagName == "not-req"){
-			flag$argNotReq <- as.integer(para[-1])
 		} else {
 			stop(paste("The flag:", x, "is indecipherable", sep = "\n"))
 		}

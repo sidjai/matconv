@@ -31,7 +31,7 @@ cond--if 2 == infL:1/rcond, 1, 'I'
 null:pracma::null, 1
 orth:pracma::orth, 1
 std:sd, 1
-corr::cor, 1, 2, method = %4 --not-req 3
+corr:cor, 1, 2, method = %4
 expm: ,expm(Matrix::Matrix(%1))
 size--if 1:dim, 1
 size--if 2: ,dim(%1)[%2]
