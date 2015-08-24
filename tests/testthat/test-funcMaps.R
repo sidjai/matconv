@@ -44,3 +44,13 @@ test_that("Flag switching integrates", {
 		"thing <- sort(omg)")
 	
 })
+
+test_that("Multiple outputs work", {
+	dict <- "matsort:sort, 2, 1 --out mean std"
+	example <- "[myMean myStd] <- matsort(asdf, hjkl)"
+	map <- makeMaps(dict)
+	result <- convFunctionsCalls(example, map)
+	expect_equal(result[1],
+		"lout <- sort(hjkl, asdf); myMean <- lout$mean; myStd <- lout$std")
+	
+})

@@ -34,7 +34,7 @@ convFunctionsCalls <- function(linesMat, maps){
 		if(!is.null(mp$flags$varOut)){
 			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
 			addCalls <- paste(
-				paste0(mp$flags$varOut, " <- lout$", reqVars),
+				paste0(reqVars, " <- lout$", mp$flags$varOut),
 				collapse = "; ")
 			out <- sprintf("lout <- %s); %s",
 				rargs,
@@ -46,8 +46,6 @@ convFunctionsCalls <- function(linesMat, maps){
 		
 		return(out)
 	}, matArgs, argMaps, linesDes[potSet])
-
-	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
 
 	return(linesDes)
 }
@@ -229,24 +227,24 @@ parseFlags <- function(dictLines){
 makeFlag <- function(vin, makeSwitch = TRUE){
 	flag <- list()
 	possFlags <- c("if", "out", "space-sep", "not-req")
+	
 
 
 
-	vapply(vin, function(x){
-		para <- strsplit(x, " ")[[1]]
+	for(si in vin){
+		para <- strsplit(si, " ")[[1]]
 		flagName <- para[1]
+
 		if(flagName == "if"){
-			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(x))
+			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
 		} else if (flagName == "out"){
 			flag$varOut <- para[-1]
 		} else if (flagName == "space-sep"){
 			flag$spaceSepMatArgs <- TRUE
 		} else {
-			stop(paste("The flag:", x, "is indecipherable", sep = "\n"))
+			stop(paste("The flag:", si, "is indecipherable", sep = "\n"))
 		}
-
-		TRUE
-	}, TRUE)
+	}
 
 	return(flag)
 }
