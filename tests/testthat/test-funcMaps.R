@@ -54,3 +54,13 @@ test_that("Multiple outputs work", {
 		"lout <- sort(hjkl, asdf); myMean <- lout$mean; myStd <- lout$std")
 	
 })
+
+test_that("Can parse using space separated args", {
+	dict <- "matsort:sort, 2, 1 --space-sep"
+	example <- "matsort asdf hjkl"
+	map <- makeMaps(dict)
+	result <- convFunctionsCalls(example, map)
+	expect_equal(result[1],
+		"sort(hjkl, asdf)")
+	
+})

@@ -12,8 +12,11 @@ convFunctionsCalls <- function(linesMat, maps){
 
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
 	argMaps <- maps[funName][inMapsSet]
-
-	linesDes[potSet] <- mapply(function(marg, mp, lin){
+	
+	convLines <- mapply(function(marg, mp, lin){
+		if(length(marg) ==  0){
+			return("")
+		}
 		
 		if(!(is.null(mp$flags$spaceSepMatArgs))){
 			marg <- strsplit(lin, " ")[[1]]
@@ -46,6 +49,25 @@ convFunctionsCalls <- function(linesMat, maps){
 		
 		return(out)
 	}, matArgs, argMaps, linesDes[potSet])
+	
+	linesDes[potSet] <- as.character(convLines)
+	
+	#deal with space sep ones
+	spaceArgSet <- vapply(maps, function(x){ !is.null(x$flags$spaceSepMatArgs) }, FALSE)
+	potSpace <- strsplit(linesDes, "(?<=\\w)\\s", perl = TRUE )
+	spaceLineSet <- vapply(potSpace, function(x){
+		!is.na(match(x[1], names(maps[spaceArgSet])))
+	}, TRUE)
+	matArgs[spaceLineSet] <- strsplit(linesMat[spaceLineSet], " ")
+	if(any(spaceArgSet) && any(spaceLineSet)){
+		linesDes[spaceLineSet] <- mapply(function(marg, mp){
+			rout <- mp$argMap[[1]](marg[-1])$rargs
+			
+			out <- paste0(paste(rout, collapse = ", "), ")")
+			return(out)
+		},matArgs[spaceLineSet], maps[spaceArgSet])
+	}
+	
 
 	return(linesDes)
 }
