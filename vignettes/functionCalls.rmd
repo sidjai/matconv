@@ -1,0 +1,110 @@
+---
+title: "matconv: Converting Function calls"
+author: "Siddarta Jairam"
+date: "`r strftime(Sys.time(),'%A, %B %d, %Y')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overall design}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, include=FALSE}
+library(matconv)
+library(knitr)
+
+knitr::opts_chunk$set(fig.pos='center', echo=FALSE, comment='>', results='asis')
+
+showExampleConv <- function(matIn, dict = ""){
+	maps <- makeMaps(dict)
+	lout <- mat2r(matIn, dict, verbose = 0)
+	diff <- length(lout[[2]]) - length(lout[[1]])
+	if (diff > 0){
+		lout[[1]] <- c(lout[[1]], rep("", diff))
+	}
+	output <- c("<table><tr>",
+    paste0("<th> Dictionary Used </th>"
+		"<th>",names(lout)[1],"</th>"),
+		paste0("<th>",names(lout)[2],"</th>"),
+		"<tr> <td valign = top>",
+		paste('|', dict, "\n"),
+		"<tr> <td valign = top>",
+		paste('|', lout[[1]], "\n"),
+		"</td>", "<td valign = top>",
+		paste('|', lout[[2]], "\n"),
+		"</td> </table>")
+	
+	cat(paste(output, collapse = "\n"))
+}
+
+```
+##Dictionary syntax
+
+You cab define a map from using a character vector or a ascii file with the dictionaries. They take on the form "matlab function : Rfunction, arguments". The arguments are given as a comma separated list. For verbatim translation, plain numbers are used and can be used as follows:
+
+```{r}
+
+showExampleConv(
+	"thing = linspace(first, second)",
+	"linspace:seq, 2, 1")
+
+```
+
+The dictionary is turned into converting functions that are returned as a list of functions using the function "makeMaps". These are named with the matLab function so the right converter is chosen using the name subsetting. You can also do literal strings and strings that have refences to the arguments using a percent sign as shown below:
+
+```{r}
+showExampleConv(
+	c("thing = linspace(1, 2, 3)",
+	"hjkl = binornd(2.3, 1.5)",
+	"asdf = erf(2)"),
+	c("linspace:seq, 1, 2, len = %3",
+	"binornd:rbinom, 1L, 1, 2",
+	"erf: , 2 * pnorm(%1 * sqrt(2)) - 1"))
+
+```
+In the second example, R has an extra argument of number of outputs wanted which for the matlab function is always 1. To do this a literal numeral is used by prepend it with an "L".
+
+In the third example, there isn't a good translation for the "erf" function but it can be done using the mathematical formula. This can be done by just leaving the R function blank and using a literal string. 
+
+MatLab has a lot of functions that change dramatically with different inputs. This can be done using flags on the name of the matLab function. Instead of returning a list of one function in the map it returns multiple functions for conversion. The decision making to use one function over the other is given as another function depending on the inputs in "map$flags$DictSwitch". So the calls that are used are used are grabing the matLab arguments and throwing them into "dictSwitch" to figure out the index of the function to use. The rest of the flags can be found using that index as well as the function to convert the matLab line. The switching flags that can be used are as follows:
+
+* number of arguments (--length(out) == 2)
+* an argument is equal to a particular value (--if 2 == 2)
+```{r basSyntax}
+example <- c( "thing = 5 * 3;", "thing2 = (thing ~= 14);")
+showExampleConv(example)
+
+```
+
+
+## Flow Control
+
+Next it goes through all the different flow control blocks and converts them to the R equivalent. The converted blocks are as follows.
+
+1. if
+2. if else
+3. for
+4. while
+
+Switch statements will be included in a future version as R does not really have a true switch / case type block. The 'switch' function is helpful in a lot of situations but the usage is different from how other languages do switch blocks. Below are some examples of how its used for the other blocks.
+
+```{r flow}
+example <- c("if argLen == 1", "  doThing = 9999;","else", "  doThing = 1;","end")
+showExampleConv(example)
+
+```
+
+## User functions
+
+In matlab there is a distinction between script files and function files. If a function file is supplied (first word is "function") than the function definitions will be changed with some of syntax.
+
+The returned objects are gathered and put in a 'return' statement at the end of the function. If there is more than one return statement a list of those objects are returned. Default inputs or an unknown length of inputs into a matLab function is handled using a protected word 'varargin'. The closest R equivalent is '...' which will be turned into a list as the variable 'varargin' in the R version. There is a whole family of input and output handlers in matLab but this is the most useful in my eyes so I gave it higher priority. Examples of this type of conversion is shown below.
+
+```{r userFunctions}
+example <- c("function [ dat ] = xlsReadPretty(varargin))", "  didThing = 1*3;", "  dat = didThing / 3;", "end")
+showExampleConv(example)
+
+```
+
+In another version, there could be options to make this conversion more integrated with the rest of the code or specifying another return class other than 'list'. This is a precursour to the function converters by adding these user functions into the dictionary of MatLab base functions to R base functions.
