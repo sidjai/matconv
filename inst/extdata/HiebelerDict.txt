@@ -31,7 +31,7 @@ cond--if 2 == infL:1/rcond, 1, 'I'
 null:pracma::null, 1
 orth:pracma::orth, 1
 std:sd, 1
-corr::cor, 1, 2, method = %4 --not-req 3
+corr:cor, 1, 2, method = %4
 expm: ,expm(Matrix::Matrix(%1))
 size--if 1:dim, 1
 size--if 2: ,dim(%1)[%2]
@@ -48,7 +48,7 @@ roots: polyroot, rev(%1)
 fminbnd: , optimize(, 1, c(%1, %2), )$minimum
 quad: integrate, 1, 2, 3
 rand--if 1 == 1L:runif, 2
-rand--if 1 == 2L:runif, 1
+rand--if 2 == 1L:runif, 1
 rand--if finally:matrix, runif(%1 * %2), %1
 randperm:sample, 1
 binornd:rbinom, 1L, 1, 2

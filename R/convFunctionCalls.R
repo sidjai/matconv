@@ -1,4 +1,4 @@
-convFunctionsCalls <- function(linesMat, dict){
+convFunctionsCalls <- function(linesMat, maps){
 	linesDes <- linesMat
 	assignInd <- regexpr("[<]\\-", linesMat)
 	leftParList <- gregexpr("\\(", linesMat)
@@ -7,15 +7,67 @@ convFunctionsCalls <- function(linesMat, dict){
 
 	funName <- getBetween(linesMat[potSet], '-\\s', '(')
 
-	inDictSet <- funName %isKey% dict
-	potSet[!inDictSet]<- FALSE
+	inMapsSet <- funName %isKey% maps
+	potSet[!inMapsSet]<- FALSE
 
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
-	argMaps <- dict[funName][inDictSet]
-
-	rArgs <- mapply(function(marg, fun){ fun(trimWhite(marg)) }, matArgs, argMaps)
-
-	linesDes[potSet] <- getBetween(linesMat[potSet], '-\\s', ')', rArgs)
+	argMaps <- maps[funName][inMapsSet]
+	
+	convLines <- mapply(function(marg, mp, lin){
+		if(length(marg) ==  0){
+			return("")
+		}
+		
+		if(!(is.null(mp$flags$spaceSepMatArgs))){
+			marg <- strsplit(lin, " ")[[1]]
+		}
+		marg <- trimWhite(marg)
+		
+		if(length(mp$argMap) == 1){
+			useMapInd <- 1
+		} else {
+			#Multiple dictionaries per matlab function
+			#use fun switcher
+			useMapInd <- mp$flags$multSwitch(marg)
+		}
+		
+		rargs <- mp$argMap[[useMapInd]](marg)$rargs
+		
+		#Use other flags
+		if(!is.null(mp$flags$varOut)){
+			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
+			addCalls <- paste(
+				paste0(reqVars, " <- lout$", mp$flags$varOut),
+				collapse = "; ")
+			out <- sprintf("lout <- %s); %s",
+				rargs,
+				addCalls)
+			
+		} else {
+			out <- getBetween(lin, '-\\s', ')', rargs)
+		}
+		
+		return(out)
+	}, matArgs, argMaps, linesDes[potSet])
+	
+	linesDes[potSet] <- as.character(convLines)
+	
+	#deal with space sep ones
+	spaceArgSet <- vapply(maps, function(x){ !is.null(x$flags$spaceSepMatArgs) }, FALSE)
+	potSpace <- strsplit(linesDes, "(?<=\\w)\\s", perl = TRUE )
+	spaceLineSet <- vapply(potSpace, function(x){
+		!is.na(match(x[1], names(maps[spaceArgSet])))
+	}, TRUE)
+	matArgs[spaceLineSet] <- strsplit(linesMat[spaceLineSet], " ")
+	if(any(spaceArgSet) && any(spaceLineSet)){
+		linesDes[spaceLineSet] <- mapply(function(marg, mp){
+			rout <- mp$argMap[[1]](marg[-1])$rargs
+			
+			out <- paste0(paste(rout, collapse = ", "), ")")
+			return(out)
+		},matArgs[spaceLineSet], maps[spaceArgSet])
+	}
+	
 
 	return(linesDes)
 }
@@ -48,49 +100,226 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			"or a file with the dictionaries", sep = ", "))
 	}
 
-	mapList <- list()
+	
+
+	lout <- parseFlags(dictLines)
+	dictLines <- lout$strSansFlags
+
 	keyVal <- strsplit(dictLines, ":")
-	funNames <- vapply(keyVal, function(x){ x[1] }, "e")
-	funVals <- vapply(keyVal, function(x){ x[2] }, "e")
+	allFunNames <- vapply(keyVal, function(x){ x[1] }, "e")
+	allDictArgs <- vapply(keyVal, function(x){ x[2] }, "e")
+	finFunNames <- unique(allFunNames)
 
-	mapFuns <- lapply(dictLines, function(lin){
-		sargs <- strsplit(funVals, ',')
-		sargs <- trimWhite(sargs[[1]])
+	maps <- lapply(1:length(finFunNames), function(x){
+		list(argMap = list(), flags = list()) })
+	names(maps) <- finFunNames
 
-		rname <- sargs[1]
-		sargs <- sargs[-1]
+	argFuns <- lapply(allDictArgs, function(x){ parseArgs(x) })
 
-		swiSet <- grepl("^[0-9]+$", sargs)
-		literalNumSet <- grepl("^[0-9]+L$", sargs)
-		strInsertSet <- grepl("\\%[0-9]", sargs)
-		stringSet <- !literalNumSet & !swiSet & !strInsertSet
+	dupsMat <- (duplicated(allFunNames) | duplicated(allFunNames, fromLast = TRUE))
 
-		return(function(matArg){
-			rargs <- NULL
-			rargs[swiSet] <- matArg[as.integer(sargs[swiSet])]
-			rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
-			for(iar in which(strInsertSet)){
-				arg <- sargs[iar]
-				test <- TRUE
-				while(test){
-					ind <- as.numeric(getBetween(arg, '%', ''))
-					arg <- sub("\\%[0-9]", matArg[ind], arg)
-					test <- grepl("\\%[0-9]", arg)
-				}
-				rargs[iar] <- arg
+	anum <- 1
+	while(anum <= length(argFuns)){
+		nam <- allFunNames[anum]
+		wantVec <- anum
+		
+		if(dupsMat[anum]){
+			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 1
+			if(is.na(lastDup)){
+				#All dups
+				lastDup <- length(dupsMat)
 			}
+			wantVec <- anum:lastDup
+			anum <- lastDup
+		}
+		
+		maps[[nam]]$argMap <- argFuns[wantVec]
+		anum <- anum + 1
+	}
+	
+	for(nm in finFunNames){
+		maps[[nm]]$flags <- lout$flags[[nm]]
+	}
 
-			rargs[stringSet] <- sargs[stringSet]
-
-			return(paste0(rname, '(', paste(rargs, collapse = ", ")))
-			})
-		})
-
-	names(mapFuns) <- funNames
-	return(mapFuns)
+	return(maps)
 
 }
 
 `%isKey%` <- function(vals, ldict){
 	return(is.element(names(ldict), vals))
+}
+
+parseArgs <- function(dictArg){
+	sargs <- strsplit(dictArg, ',')
+	sargs <- trimWhite(sargs[[1]])
+
+	rname <- sargs[1]
+	sargs <- sargs[-1]
+
+	swiSet <- grepl("^[0-9]+$", sargs)
+	literalNumSet <- grepl("^[0-9]+L$", sargs)
+	strInsertSet <- grepl("\\%[0-9]", sargs)
+	stringSet <- !literalNumSet & !swiSet & !strInsertSet
+
+	return(function(matArg){
+		rargs <- NULL
+		rargs[swiSet] <- matArg[as.integer(sargs[swiSet])]
+		rargs[literalNumSet] <- as.numeric(gsub("L", "", sargs[literalNumSet]))
+		for(iar in which(strInsertSet)){
+			arg <- sargs[iar]
+			test <- TRUE
+			while(test){
+				ind <- as.numeric(getBetween(arg, '%', ''))
+				arg <- sub("\\%[0-9]", matArg[ind], arg)
+				test <- grepl("\\%[0-9]", arg)
+			}
+			rargs[iar] <- arg
+		}
+
+		rargs[stringSet] <- sargs[stringSet]
+
+		return(list(
+			rargs = paste0(rname, '(', paste(rargs, collapse = ", "))
+			))
+	})
+}
+
+parseFlags <- function(dictLines){
+
+
+	flagStr <- lapply(1:length(dictLines), function(x){ list() })
+	strSansFlags <- dictLines
+
+	#separate flags
+	stFlag <- gregexpr("\\-\\-", dictLines)
+	stDiv <- regexpr("[:]", dictLines)
+	flagSet <- vapply(stFlag, function(x){ x[1] > 0 }, TRUE)
+	
+	for(ind in which(flagSet)){
+		left <- stFlag[[ind]] + 2
+		right <- ifelse(stFlag[[ind]] > stDiv[[ind]],
+			nchar(dictLines[ind]),
+			stDiv[[ind]] - 1
+		)
+
+		flagStr[[ind]] <- mapply(function(lt, rt){
+			substr(dictLines[ind], lt, rt)
+		}, left, right)
+		
+		strSansFlags[ind] <- mapply(function(lt, rt){
+			paste0(
+				substr(strSansFlags[ind], 1, lt - 3),
+				substr(strSansFlags[ind], rt + 1, nchar(strSansFlags[ind]))
+			)
+		}, left, right)
+	}
+
+	#make flags and funcSwitchers
+	matName <- vapply(strsplit(strSansFlags, ":"), function(x){ x[1] },"e")
+	
+	uniMatName <- unique(matName)
+	dupsSet <- vapply(uniMatName, function(x){
+		sum(grepl(x, matName)) > 1
+	}, TRUE)
+	
+	matNameswFlags <- unique(matName[flagSet])
+	uniFlagNums <- match(matNameswFlags, uniMatName)
+	
+	flags <- lapply(1:length(uniMatName), function(x){ list() })
+	names(flags) <- uniMatName
+
+	for(unind in uniFlagNums){
+		
+		wantVec <- grep(uniMatName[unind], matName)
+		if(dupsSet[unind]){
+			
+			flags[[unind]] <- lapply(wantVec, function(x){
+				makeFlag(flagStr[[x]], makeSwitch = FALSE)
+			})
+			flags[[unind]]$multSwitch <- makeFunSwitcher(flagStr[wantVec])
+			
+		} else {
+			flags[[unind]] <- makeFlag(flagStr[[wantVec]])
+		}
+	}
+
+	return(mget(c("strSansFlags", "flags")))
+}
+
+makeFlag <- function(vin, makeSwitch = TRUE){
+	flag <- list()
+	possFlags <- c("if", "out", "space-sep", "not-req")
+	
+
+
+
+	for(si in vin){
+		para <- strsplit(si, " ")[[1]]
+		flagName <- para[1]
+
+		if(flagName == "if"){
+			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
+		} else if (flagName == "out"){
+			flag$varOut <- para[-1]
+		} else if (flagName == "space-sep"){
+			flag$spaceSepMatArgs <- TRUE
+		} else {
+			stop(paste("The flag:", si, "is indecipherable", sep = "\n"))
+		}
+	}
+
+	return(flag)
+}
+
+makeFunSwitcher <- function(lFlags){
+
+	finallyInd <- NULL
+	lengthOutVec <- lengthVec <- rep(NA, length(lFlags))
+	matMap <- lapply(1:length(lFlags), function(x){
+		list(arg = NULL, val = NULL)
+	})
+
+	for(dictNum in 1:length(lFlags)){
+		para <- strsplit(lFlags[[dictNum]][1], ' ')[[1]][-1]
+		if(length(para) == 1){
+			if(para[1] == "finally"){
+				finallyInd <- dictNum
+			} else {
+				lengthVec[dictNum] <- as.integer(para[1])
+			}
+		} else {
+			if(para[1] == "length(out)"){
+				lengthOutVec[dictNum] <- as.integer(para[3])
+			} else {
+				matMap[[dictNum]]$arg <- para[1]
+				matMap[[dictNum]]$val <- gsub("L", "", para[3])
+			}
+		}
+	}
+
+	return(function(matArgs, numOut = 1){
+		useInd <- NULL
+		if(numOut > 1){
+			useInd <- which(lengthOutVec == numOut)
+		}
+
+		useInd <- c(useInd, which(lengthVec == length(matArgs)))
+
+		test <- vapply(matMap, function(mp){
+			check <- matArgs[as.integer(mp$arg)] == mp$val
+			if(length(check) == 0) check <- FALSE
+			return(check)
+		}, TRUE)
+		useInd <- c(useInd, which(test))
+
+		if(length(useInd) == 0){
+			if(!is.null(finallyInd)){
+				useInd <- finallyInd
+			} else {
+				stop(paste("Do not have rule that supports:" , matArgs))
+			}
+		}
+
+		return(useInd[1])
+	})
 }
