@@ -19,7 +19,7 @@ knitr::opts_chunk$set(fig.pos='center', echo=FALSE, comment='>', results='asis')
 showExampleConv <- function(matIn, dict = ""){
 	maps <- makeMaps(dict)
 	lout <- mat2r(matIn, funcConverters = maps, verbose = 0)
-	
+
 	lout[[2]] <- gsub("\\$", "\\\\$", lout[[2]])
 	diff <- length(lout[[2]]) - length(lout[[1]])
 	if (diff > 0){
@@ -53,7 +53,8 @@ showExampleConv(
 
 ```
 
-The dictionary is turned into converting functions that are returned as a list of functions using the function "makeMaps". These are named with the matLab function so the right converter is chosen using the name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
+The dictionary is turned into converting functions that are returned as a list of functions using the function "makeMaps". These are named with the matLab function so the right converter is chosen using name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
+
 ```{r Function_literals}
 showExampleConv(
 	c("thing = linspace(1, 2, 3)",
@@ -65,7 +66,7 @@ showExampleConv(
 
 ```
 
-In the second example, R has an extra argument of number of outputs wanted which for the matlab function is always 1. To do this a literal numeral is used by prepend it with an "L".
+In the second example, R has an extra argument of number of outputs wanted which for the matlab function is always 1. To do this a literal numeral is used by append it with an "L".
 
 In the third example, there isn't a good translation for the "erf" function but it can be done using the mathematical formula. This can be done by just leaving the R function blank and using a literal string.
 
