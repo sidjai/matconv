@@ -192,7 +192,7 @@ parseFlags <- function(dictLines){
 
 	#separate flags
 	stFlag <- gregexpr("\\-\\-", dictLines)
-	stDiv <- gregexpr("[:]", dictLines)
+	stDiv <- regexpr("[:]", dictLines)
 	flagSet <- vapply(stFlag, function(x){ x[1] > 0 }, TRUE)
 	
 	for(ind in which(flagSet)){
