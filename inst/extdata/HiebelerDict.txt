@@ -48,7 +48,7 @@ roots: polyroot, rev(%1)
 fminbnd: , optimize(, 1, c(%1, %2), )$minimum
 quad: integrate, 1, 2, 3
 rand--if 1 == 1L:runif, 2
-rand--if 1 == 2L:runif, 1
+rand--if 2 == 1L:runif, 1
 rand--if finally:matrix, runif(%1 * %2), %1
 randperm:sample, 1
 binornd:rbinom, 1L, 1, 2
