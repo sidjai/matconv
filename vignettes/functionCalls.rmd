@@ -70,7 +70,7 @@ In the second example, R has an extra argument of number of outputs wanted which
 
 In the third example, there isn't a good translation for the "erf" function but it can be done using the mathematical formula. This can be done by just leaving the R function blank and using a literal string.
 
-MatLab has a lot of functions that change dramatically with different inputs. This can be done using flags on the name of the matLab function. Instead of returning a list of one function in the map it returns multiple functions for conversion. The decision making to use one function over the other is given as another function depending on the inputs in "map$flags$DictSwitch". So the calls that are used are used are grabbing the matLab arguments and throwing them into "dictSwitch" to figure out the index of the function to use. The rest of the flags can be found using that index as well as the function to convert the matLab line. The switching flags that can be used are as follows:
+MatLab has a lot of functions that change dramatically with different inputs. This can be done using flags on the name of the matLab function. Instead of returning a list of one function in the map it returns multiple functions for conversion. The decision making to use one function over the other is given as another function depending on the inputs in "map\$flags\$DictSwitch". So the calls that are used are used are grabbing the matLab arguments and throwing them into "dictSwitch" to figure out the index of the function to use. The rest of the flags can be found using that index as well as the function to convert the matLab line. The switching flags that can be used are as follows:
 
 * number of arguments (--if 2)
 * an argument is equal to a particular value (--if 2 == 2L)
@@ -97,3 +97,5 @@ showExampleConv(
   )
 
 ```
+
+Function switchers and multiple outputs or any other flag can be used together as everything is indexed at the same level. I can imagine more flags can be added to deal with matrix algebra more directly. This will evolve once the data structures are converted in a later version.
