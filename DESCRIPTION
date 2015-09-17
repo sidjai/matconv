@@ -2,7 +2,8 @@ Package: matconv
 Type: Package
 Title: A code converter from the MatLab/Octave language to R
 Version: 0.2.0.9000
-Author: Siddarta Jairam
+Authors@R: c(person("Siddarta", "Jairam", email = "sidjsb@gmail.com" role = c("aut", "cre")),
+  person("David", "Hiebeler", email = "hiebeler@math.umaine.edu", role = "ctb"))
 Maintainer: Siddarta Jairam <sidjsb@gmail.com>
 Description: This package provides a translator for matLab / Octave code into R code. It does some syntax changes, but most of the heavy lifting is in the function changes since the languages are so similar. Options for different data structures and the functions that can be changed are given. The MatLab code should be in mostly in adherence to the standard style guide but some effort has been made to accomadate different number of spaces and other small syntax issues. This will not make the code more R-thonic and may not even run afterwards. However, the rudimentary syntax, base function and data structure conversion is done quickly so that the maintainer can focus on changes to the the design structure to make the code more R-thonic or more Rpkg-thonic.
 License: GPL (>= 2)
