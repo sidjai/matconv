@@ -1,11 +1,13 @@
-getBetween <- function(sin, left, right, insertChar = NULL){
+getBetween <- function(sin, left, right,
+	insertChar = NULL, 
+	whatIsEmpty = c("oneChar", "last", "first")[1]){
 	
 	if(!nzchar(left)){
 		rightPos <- regexpr(paste0("\\", right), sin)
-		leftPos <- defaultOneChar(rightPos, `-`)
+		leftPos <- dealEmpty(rightPos, type = whatIsEmpty, fun = `-`, lin = sin)
 	} else if(!nzchar(right)){
 		leftPos <- regexpr(paste0("\\", left), sin)
-		rightPos <- defaultOneChar(leftPos, `+`)
+		rightPos <- dealEmpty(leftPos, type = whatIsEmpty, fun = `+`, lin = sin)
 	} else {
 		rightPos <- regexpr(paste0("\\", right), sin)
 		leftPos <- regexpr(paste0("\\", left), sin)
@@ -28,6 +30,15 @@ getBetween <- function(sin, left, right, insertChar = NULL){
 		)
 		return(newStr)
 	}
+}
+	
+dealEmpty <- function(pos, type, fun = NULL, lin = ""){
+	out <- switch(type,
+		oneChar = defaultOneChar(pos, fun),
+		first = 1,
+		last = nchar(lin))
+	attr(out, "match.length") <- 1
+	return(out)
 }
 
 trimWhite <- function(sin, where = "both"){

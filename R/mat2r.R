@@ -18,7 +18,7 @@
 mat2r <- function(inMat,
                   pathOutR ='',
                   funcConverters = NULL,
-                  dataConverter = NULL,
+                  dataConverters = NULL,
                   verbose = 1){
 
 	if (length(inMat) == 1 && file.exists(inMat)){
@@ -44,7 +44,7 @@ mat2r <- function(inMat,
 	if (!isScr) linesDes <- convUserFunctions(linesDes)
 
 	if(!is.null(dataConverter)){
-		linesDes <- convData(linesDes, dataConverter)
+		linesDes <- convData(linesDes, dataConverters)
 	}
 
 	if(!is.null(funcConverters)){

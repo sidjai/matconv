@@ -4,7 +4,7 @@ context("Function Maps")
 test_that("Basic argument switching", {
   dict <- "matsort:sort, 2, 1"
   example <- c("asdf", "hjkl")
-  map <- makeMaps(dict)
+  map <- makeFuncMaps(dict)
   result <- map$matsort$argMap[[1]](example)$rargs
   expect_match(result, paste(rev(example), collapse = ', '))
 })
@@ -12,7 +12,7 @@ test_that("Basic argument switching", {
 test_that("Literal numbers in output", {
   dict <- "matsort:sort, 2, 1L"
   example <- c("asdf", "hjkl")
-  map <- makeMaps(dict)
+  map <- makeFuncMaps(dict)
   result <- map$matsort$argMap[[1]](example)$rargs
   expect_match(result, paste(example[2], 1, sep = ', '))
 })
@@ -20,7 +20,7 @@ test_that("Literal numbers in output", {
 test_that("Literal arg inserts", {
   dict <- "matsort:sort, %1 * %2, asdf%1"
   example <- c("asdf", "hjkl")
-  map <- makeMaps(dict)
+  map <- makeFuncMaps(dict)
   result <- map$matsort$argMap[[1]](example)$rargs
   expect_equal(result,
     paste(
@@ -36,31 +36,31 @@ test_that("Flag switching integrates", {
 	example <- c(
 		"thing <- matsort(asdf, hjkl)",
 		"thing <- matsort(asdf, hjkl, omg)")
-	map <- makeMaps(dict)
+	map <- makeFuncMaps(dict)
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
 		"thing <- sort(hjkl, asdf)")
 	expect_equal(result[2],
 		"thing <- sort(omg)")
-	
+
 })
 
 test_that("Multiple outputs work", {
 	dict <- "matsort:sort, 2, 1 --out mean std"
 	example <- "[myMean myStd] <- matsort(asdf, hjkl)"
-	map <- makeMaps(dict)
+	map <- makeFuncMaps(dict)
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
 		"lout <- sort(hjkl, asdf); myMean <- lout$mean; myStd <- lout$std")
-	
+
 })
 
 test_that("Can parse using space separated args", {
 	dict <- "matsort:sort, 2, 1 --space-sep"
 	example <- "matsort asdf hjkl"
-	map <- makeMaps(dict)
+	map <- makeFuncMaps(dict)
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
 		"sort(hjkl, asdf)")
-	
+
 })

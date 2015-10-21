@@ -4,7 +4,7 @@
 \alias{mat2r}
 \title{mat2r}
 \usage{
-mat2r(inMat, pathOutR = "", funcConverters = NULL, dataConverter = NULL,
+mat2r(inMat, pathOutR = "", funcConverters = NULL, dataConverters = NULL,
   verbose = 1)
 }
 \arguments{

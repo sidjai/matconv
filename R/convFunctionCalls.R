@@ -12,17 +12,17 @@ convFunctionsCalls <- function(linesMat, maps){
 
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
 	argMaps <- maps[funName][inMapsSet]
-	
+
 	convLines <- mapply(function(marg, mp, lin){
 		if(length(marg) ==  0){
 			return("")
 		}
-		
+
 		if(!(is.null(mp$flags$spaceSepMatArgs))){
 			marg <- strsplit(lin, " ")[[1]]
 		}
 		marg <- trimWhite(marg)
-		
+
 		if(length(mp$argMap) == 1){
 			useMapInd <- 1
 		} else {
@@ -30,9 +30,9 @@ convFunctionsCalls <- function(linesMat, maps){
 			#use fun switcher
 			useMapInd <- mp$flags$multSwitch(marg)
 		}
-		
+
 		rargs <- mp$argMap[[useMapInd]](marg)$rargs
-		
+
 		#Use other flags
 		if(!is.null(mp$flags$varOut)){
 			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
@@ -42,16 +42,16 @@ convFunctionsCalls <- function(linesMat, maps){
 			out <- sprintf("lout <- %s); %s",
 				rargs,
 				addCalls)
-			
+
 		} else {
 			out <- getBetween(lin, '-\\s', ')', rargs)
 		}
-		
+
 		return(out)
 	}, matArgs, argMaps, linesDes[potSet])
-	
+
 	linesDes[potSet] <- as.character(convLines)
-	
+
 	#deal with space sep ones
 	spaceArgSet <- vapply(maps, function(x){ !is.null(x$flags$spaceSepMatArgs) }, FALSE)
 	potSpace <- strsplit(linesDes, "(?<=\\w)\\s", perl = TRUE )
@@ -62,12 +62,12 @@ convFunctionsCalls <- function(linesMat, maps){
 	if(any(spaceArgSet) && any(spaceLineSet)){
 		linesDes[spaceLineSet] <- mapply(function(marg, mp){
 			rout <- mp$argMap[[1]](marg[-1])$rargs
-			
+
 			out <- paste0(paste(rout, collapse = ", "), ")")
 			return(out)
 		},matArgs[spaceLineSet], maps[spaceArgSet])
 	}
-	
+
 
 	return(linesDes)
 }
@@ -80,7 +80,7 @@ convFunctionsCalls <- function(linesMat, maps){
 #' @return a list of functions with names of matlab functions and the function
 #' to change the matlab input into an R function call
 #' @export
-makeMaps <- function(addDict = NULL, pathDict = ''){
+makeFuncMaps <- function(addDict = NULL, pathDict = ''){
 	dictLines <- addDict
 	if(nzchar(pathDict)){
 		if(!file.exists(pathDict)){
@@ -100,7 +100,7 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			"or a file with the dictionaries", sep = ", "))
 	}
 
-	
+
 
 	lout <- parseFlags(dictLines)
 	dictLines <- lout$strSansFlags
@@ -122,7 +122,7 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 	while(anum <= length(argFuns)){
 		nam <- allFunNames[anum]
 		wantVec <- anum
-		
+
 		if(dupsMat[anum]){
 			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 1
 			if(is.na(lastDup)){
@@ -132,11 +132,11 @@ makeMaps <- function(addDict = NULL, pathDict = ''){
 			wantVec <- anum:lastDup
 			anum <- lastDup
 		}
-		
+
 		maps[[nam]]$argMap <- argFuns[wantVec]
 		anum <- anum + 1
 	}
-	
+
 	for(nm in finFunNames){
 		maps[[nm]]$flags <- lout$flags[[nm]]
 	}
@@ -194,7 +194,7 @@ parseFlags <- function(dictLines){
 	stFlag <- gregexpr("\\-\\-", dictLines)
 	stDiv <- regexpr("[:]", dictLines)
 	flagSet <- vapply(stFlag, function(x){ x[1] > 0 }, TRUE)
-	
+
 	for(ind in which(flagSet)){
 		left <- stFlag[[ind]] + 2
 		right <- ifelse(stFlag[[ind]] > stDiv[[ind]],
@@ -205,7 +205,7 @@ parseFlags <- function(dictLines){
 		flagStr[[ind]] <- mapply(function(lt, rt){
 			substr(dictLines[ind], lt, rt)
 		}, left, right)
-		
+
 		strSansFlags[ind] <- mapply(function(lt, rt){
 			paste0(
 				substr(strSansFlags[ind], 1, lt - 3),
@@ -216,28 +216,28 @@ parseFlags <- function(dictLines){
 
 	#make flags and funcSwitchers
 	matName <- vapply(strsplit(strSansFlags, ":"), function(x){ x[1] },"e")
-	
+
 	uniMatName <- unique(matName)
 	dupsSet <- vapply(uniMatName, function(x){
 		sum(grepl(x, matName)) > 1
 	}, TRUE)
-	
+
 	matNameswFlags <- unique(matName[flagSet])
 	uniFlagNums <- match(matNameswFlags, uniMatName)
-	
+
 	flags <- lapply(1:length(uniMatName), function(x){ list() })
 	names(flags) <- uniMatName
 
 	for(unind in uniFlagNums){
-		
+
 		wantVec <- grep(uniMatName[unind], matName)
 		if(dupsSet[unind]){
-			
+
 			flags[[unind]] <- lapply(wantVec, function(x){
 				makeFlag(flagStr[[x]], makeSwitch = FALSE)
 			})
 			flags[[unind]]$multSwitch <- makeFunSwitcher(flagStr[wantVec])
-			
+
 		} else {
 			flags[[unind]] <- makeFlag(flagStr[[wantVec]])
 		}
@@ -249,7 +249,7 @@ parseFlags <- function(dictLines){
 makeFlag <- function(vin, makeSwitch = TRUE){
 	flag <- list()
 	possFlags <- c("if", "out", "space-sep", "not-req")
-	
+
 
 
 
