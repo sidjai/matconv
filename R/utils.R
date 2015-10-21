@@ -1,7 +1,7 @@
 getBetween <- function(sin, left, right,
-	insertChar = NULL, 
+	insertChar = NULL,
 	whatIsEmpty = c("oneChar", "last", "first")[1]){
-	
+
 	if(!nzchar(left)){
 		rightPos <- regexpr(paste0("\\", right), sin)
 		leftPos <- dealEmpty(rightPos, type = whatIsEmpty, fun = `-`, lin = sin)
@@ -31,7 +31,7 @@ getBetween <- function(sin, left, right,
 		return(newStr)
 	}
 }
-	
+
 dealEmpty <- function(pos, type, fun = NULL, lin = ""){
 	out <- switch(type,
 		oneChar = defaultOneChar(pos, fun),
@@ -60,4 +60,12 @@ defaultOneChar <- function(oppsMatch, func){
 	defMatch <- func(oppsMatch, 2)
 	attr(defMatch, "match.length") <- 1
 	return(defMatch)
+}
+
+isClassName <- function(sin){
+	check <- is.list(tryCatch(new(sin),
+		error = function(cond){
+			!grepl("is not a defined class", cond)
+		}))
+	return(check)
 }

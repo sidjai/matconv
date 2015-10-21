@@ -17,7 +17,7 @@ library(knitr)
 knitr::opts_chunk$set(fig.pos='center', echo=FALSE, comment='>', results='asis')
 
 showExampleConv <- function(matIn, dict = ""){
-	maps <- makeMaps(dict)
+	maps <- makeFuncMaps(dict)
 	lout <- mat2r(matIn, funcConverters = maps, verbose = 0)
 
 	lout[[2]] <- gsub("\\$", "\\\\$", lout[[2]])
@@ -53,7 +53,7 @@ showExampleConv(
 
 ```
 
-The dictionary is turned into converting functions that are returned as a list of functions using the function "makeMaps". These are named with the matLab function so the right converter is chosen using name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
+The dictionary is turned into converting functions that are returned as a list of functions using the function "makeFuncMaps". These are named with the matLab function so the right converter is chosen using name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
 
 ```{r Function_literals}
 showExampleConv(
