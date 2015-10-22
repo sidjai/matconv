@@ -1,6 +1,7 @@
 getBetween <- function(sin, left, right,
 	insertChar = NULL,
-	whatIsEmpty = c("oneChar", "last", "first")[1]){
+	whatIsEmpty = c("oneChar", "last", "first")[1],
+	shInclude = FALSE){
 
 	if(!nzchar(left)){
 		rightPos <- regexpr(paste0("\\", right), sin)
@@ -11,6 +12,13 @@ getBetween <- function(sin, left, right,
 	} else {
 		rightPos <- regexpr(paste0("\\", right), sin)
 		leftPos <- regexpr(paste0("\\", left), sin)
+		if(shInclude){
+			leftPos <- leftPos - 1
+			attr(leftPos, "match.length") <- 1
+
+			rightPos <- rightPos + attr(rightPos, "match.length")
+			attr(rightPos, "match.length") <- 1
+		}
 	}
 
 

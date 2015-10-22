@@ -53,3 +53,18 @@ test_that("getBetween does one character default",{
   expect_equal(match(getBetween("asd(%1)sd", '%', '', 'c'),"asd(%c)sd"),
     1)
 })
+
+
+test_that("getBetween does inclusion right", {
+  res <- getBetween("sdf[1234]jkly", left = "[", right = "]", shInclude = TRUE)
+  expect_true(grepl("\\[1234\\]", res))
+
+  res <- getBetween("sdf[1234]jkly",
+    left = "[", right = "]", insertSt <- "hello", shInclude = TRUE)
+  expect_true(grepl("sdfhellojkly", res))
+  
+  res <- getBetween("sdf[www1234]wwwjkly",
+  	left = "[www", right = "]www", insertSt <- "hello", shInclude = TRUE)
+  expect_true(grepl("sdfhellojkly", res))
+
+})
