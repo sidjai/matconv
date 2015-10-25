@@ -5,10 +5,20 @@ convData <- function(linesMat, maps){
 
 }
 
+#' Make the maps for the data
+#'
+#' @param leftSym The left symbol that contains the matlab data
+#' @param rightSym the right symbol that contains the matlab data
+#' @param rClass The formal r class name that defines what the R data is
+#'   outputted as
+#'
+#' @return A function that takes in a matlab lines and changes the data into R
+#'   data lines
+#' @export
 makeDataMap <- function(leftSym, rightSym, rClass){
 
 	if(!isClassName(rClass)){
-		stop(sprintf("'%s' is not a valid R class "))
+		stop(sprintf("'%s' is not a valid R class", rClass))
 	}
 
 
@@ -18,10 +28,10 @@ makeDataMap <- function(leftSym, rightSym, rClass){
 
 		guts <- getBetween(lin, leftSym, rightSym)
 		rout <- switch(rClass,
-			vector = sprintf("c(%s)", guts),
-			data.frame = sprintf(, guts),
-			list = sprintf(, guts),
-			data.frame = sprintf(, guts),
+			vector = sprintf("c(%s)", paste(splitMatVec(guts), collapse = ", ")),
+			data.frame = as.data.frame(matrixify(guts)),
+			list = as.list(matrixify(guts)),
+			matrix = matrixify(guts),
 		)
 
 
@@ -35,12 +45,11 @@ makeDataMap <- function(leftSym, rightSym, rClass){
 
 matrixify <- function(lin){
 	noNums <- gsub("\\d+(\\.\\d+)?", "|", lin)
-	allNums <- gsub(",", " ", gsub(";", " ", lin))
-	numVec <- trimWhite(c(strsplit(allNums, " "), recursive = TRUE))
-	numVec <- as.numeric(numVec[nzchar(numVec)])
+	numVec <- splitMatVec(lin)
+	numVec <- as.numeric(numVec)
 
 	refMat <- lapply(strsplit(noNums, "[|]"), function(vec){
-	
+
 		rows <- grep("[;]", vec)
 		cols <- c(1, grep("\\s|[,]", vec))
 
@@ -50,7 +59,7 @@ matrixify <- function(lin){
 		if(length(rowInd) - length(colInd) != 0) stop("non equal in matrixfy")
 		return(cbind(rowInd, colInd))
 	})
-	
+
 	rMat <- simplify2array(refMat)
 	maxes <- vapply(1:dim(rMat)[3], function(x){
 		c(max(rMat[,1,x]), max(rMat[,2,x]))
@@ -63,5 +72,13 @@ matrixify <- function(lin){
 		maxes[2,])
 
 	return(outMat)
+
+}
+
+splitMatVec <- function(sin){
+
+	allNums <- gsub(",", " ", gsub(";", " ", sin))
+	thingVec <- trimWhite(c(strsplit(allNums, " "), recursive = TRUE))
+	return(thingVec[nzchar(thingVec)])
 
 }

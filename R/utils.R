@@ -71,9 +71,9 @@ defaultOneChar <- function(oppsMatch, func){
 }
 
 isClassName <- function(sin){
-	check <- is.list(tryCatch(new(sin),
+	out <- tryCatch(new(sin),
 		error = function(cond){
 			!grepl("is not a defined class", cond)
-		}))
-	return(check)
+		})
+	return(!is.logical(out) || out)
 }
