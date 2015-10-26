@@ -40,3 +40,13 @@ test_that("Integration: data maps", {
 	expect_null(dim(celRes))
 	
 })
+
+test_that("Data maps doesn't pick up non-instantiations",{
+	dataMap <- makeDataMap("{", "}", "matrix")
+	negTest <- "stmTable{rr,4} <- 'Feed'"
+	res <- dataMap(negTest)
+	
+	expect_true(!is.na(match(res, negTest)))
+	
+	
+})

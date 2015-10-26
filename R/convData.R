@@ -25,19 +25,23 @@ makeDataMap <- function(leftSym, rightSym, rClass){
 
 
 	return(function(lin){
+		equ <- regexpr("[<]-|=", lin)
+		st <- regexpr(paste0("\\", leftSym), lin)
+		
+		if(equ > st){
+			return(lin)
+		} else {
 
-		guts <- getBetween(lin, leftSym, rightSym)
-		rout <- switch(rClass,
-			vector = sprintf("c(%s)", paste(splitMatVec(guts), collapse = ", ")),
-			data.frame = as.data.frame(matrixify(guts)),
-			list = as.list(matrixify(guts)),
-			matrix = matrixify(guts),
-		)
-
-
-
-		return(
-			getBetween(lin,leftSym, rightSym, insertChar = rout, shInclude = TRUE))
+			guts <- getBetween(lin, leftSym, rightSym)
+			rout <- switch(rClass,
+				vector = sprintf("c(%s)", paste(splitMatVec(guts), collapse = ", ")),
+				data.frame = as.data.frame(matrixify(guts)),
+				list = as.list(matrixify(guts)),
+				matrix = matrixify(guts)
+			)
+			return(
+				getBetween(lin,leftSym, rightSym, insertChar = rout, shInclude = TRUE))
+		}
 
 
 	})
