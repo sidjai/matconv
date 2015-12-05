@@ -1,0 +1,29 @@
+context("Slicing Data")
+
+
+test_that("Can slice with one instance",{
+	matLine <- "asdfasdf <- dat{1,2}"
+	mp <- makeSliceMap("{", "}", "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfasdf <- dat[[1,2]]")))
+	
+	
+})
+
+test_that("Can slice with Structures",{
+	matLine <- "asdfasdf <- dat.temp(1,2)"
+	mp <- makeSliceMap(matClass = "structure", rClass = "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfasdf <- dat[['temp']](1,2)")))
+	
+	
+})
+
+test_that("Can slice with mult instance",{
+	matLine <- "asdfasdf <- dat{3,4}{1,2}"
+	mp <- makeSliceMap("{", "}", "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfasdf <- dat[[3,4]][[1,2]]")))
+	
+	
+})

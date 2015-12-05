@@ -5,7 +5,11 @@
 #' @param inMat A file path with the input MatLab / Octave code to be converted
 #' or a character vector of the code that needs to be converted
 #' @param pathOutR A file path with the desired output file location
-#' @param funcConverters A list of function converters that the user wants to use in this conversion
+#' @param funcConverters A list of function converters that the user wants to
+#'   use in this conversion made by \code{\link{makeFuncMaps}}
+#' @param dataConverters A list of function converters that the user wants to 
+#'   use in this conversion made by \code{\link{makeSliceMap}} or
+#'   \code{\link{makeDataMap}}
 #' @param verbose A number indicating the amount of messages that should be outputed.
 #' \describe{
 #'   \item{0}{No messages}
@@ -43,7 +47,7 @@ mat2r <- function(inMat,
 
 	if (!isScr) linesDes <- convUserFunctions(linesDes)
 
-	if(!is.null(dataConverter)){
+	if(!is.null(dataConverters)){
 		linesDes <- convData(linesDes, dataConverters)
 	}
 
