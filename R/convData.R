@@ -45,22 +45,27 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	}
 	
 	return(function(lin){
-		guts <- getBetween(lin, leftSym, rightSym)
 		
 		rBounds <- switch(rClass,
 			vector = c("[", "]"),
 			data.frame = ,
 			list = c("[[", "]]")
 		)
-		goodLin <- if(matClass == "structure"){
-			rout <- sprintf("%s'%s'%s", rBounds[1], guts, rBounds[2])
-			bas <- getBetween(lin, leftSym, rightSym, insertChar = rout)
-			sub("[.]", "", bas)
-		} else {
-			rout <- paste0(rBounds[1], guts, rBounds[2])
-			getBetween(lin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
-		}
 		
+		goodLin <- lin
+		
+		while(grepl(paste0("\\", leftSym), goodLin)){
+			guts <- getBetween(goodLin, leftSym, rightSym)
+			
+			goodLin <- if(matClass == "structure"){
+				rout <- sprintf("%s'%s'%s", rBounds[1], guts, rBounds[2])
+				bas <- getBetween(goodLin, leftSym, rightSym, insertChar = rout)
+				sub("[.]", "", bas)
+			} else {
+				rout <- paste0(rBounds[1], guts, rBounds[2])
+				getBetween(goodLin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
+			}
+		}
 		return(goodLin)
 		
 	})
