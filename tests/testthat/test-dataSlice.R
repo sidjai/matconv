@@ -27,3 +27,12 @@ test_that("Can slice with mult instance",{
 	
 	
 })
+
+test_that("Can slice with mult struct instances",{
+	matLine <- "asdfasdf <- dat.temp.K"
+	mp <- makeSliceMap(matClass = "structure", rClass = "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfasdf <- dat[['temp']][['K']]")))
+	
+	
+})

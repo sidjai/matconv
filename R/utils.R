@@ -10,8 +10,10 @@ getBetween <- function(sin, left, right,
 		leftPos <- regexpr(paste0("\\", left), sin)
 		rightPos <- dealEmpty(leftPos, type = whatIsEmpty, fun = `+`, lin = sin)
 	} else {
-		rightPos <- regexpr(paste0("\\", right), sin)
 		leftPos <- regexpr(paste0("\\", left), sin)
+		restSin <- substr(sin, leftPos + 1, nchar(sin))
+		rightPos <- regexpr(paste0("\\", right), restSin) + leftPos
+		
 		if(shInclude){
 			leftPos <- leftPos - 1
 			attr(leftPos, "match.length") <- 1

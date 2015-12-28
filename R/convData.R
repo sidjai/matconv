@@ -44,17 +44,18 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 			"notation as function use. Converting these would be destructive."))
 	}
 	
+	rBounds <- switch(rClass,
+		vector = c("[", "]"),
+		data.frame = ,
+		list = c("[[", "]]")
+	)
+	
 	return(function(lin){
 		
-		rBounds <- switch(rClass,
-			vector = c("[", "]"),
-			data.frame = ,
-			list = c("[[", "]]")
-		)
-		
 		goodLin <- lin
-		
-		while(grepl(paste0("\\", leftSym), goodLin)){
+		check <- TRUE
+		while(check){
+			bef <- goodLin
 			guts <- getBetween(goodLin, leftSym, rightSym)
 			
 			goodLin <- if(matClass == "structure"){
@@ -65,6 +66,9 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 				rout <- paste0(rBounds[1], guts, rBounds[2])
 				getBetween(goodLin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
 			}
+			check <- 
+				grepl(paste0("\\", leftSym), goodLin) ||
+				!is.na(match(bef, goodLin))
 		}
 		return(goodLin)
 		
@@ -74,7 +78,7 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 getMatLabClassBounds <- function(matClass){
 	
 	matDict <- list(
-		structure = c(".", "(|\\{"),
+		structure = c(".", "W|$"),
 		cell = c("{", "}"),
 		matrix = c("[", "[")
 		)
