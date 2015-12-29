@@ -68,3 +68,10 @@ test_that("getBetween does inclusion right", {
   expect_true(grepl("sdfhellojkly", res))
 
 })
+
+test_that("getBetween picks up nothing if one of the positions aren't found",{
+	res <- getBetween("dfg}sdfg", ".", "}")
+	expect_true(grepl(res, ""))
+	
+	
+})

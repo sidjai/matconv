@@ -23,7 +23,12 @@ getBetween <- function(sin, left, right,
 		}
 	}
 
-
+	if(leftPos < 0){
+		rightPos <- leftPos
+	}
+	if(rightPos < 0){
+		leftPos <- rightPos
+	}
 
 
 	if(is.null(insertChar)){

@@ -53,10 +53,9 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	return(function(lin){
 		
 		goodLin <- lin
-		check <- TRUE
-		while(check){
+		guts <- getBetween(goodLin, leftSym, rightSym)
+		while(nzchar(guts)){
 			bef <- goodLin
-			guts <- getBetween(goodLin, leftSym, rightSym)
 			
 			goodLin <- if(matClass == "structure"){
 				rout <- sprintf("%s'%s'%s", rBounds[1], guts, rBounds[2])
@@ -66,9 +65,7 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 				rout <- paste0(rBounds[1], guts, rBounds[2])
 				getBetween(goodLin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
 			}
-			check <- 
-				grepl(paste0("\\", leftSym), goodLin) ||
-				!is.na(match(bef, goodLin))
+			guts <- getBetween(goodLin, leftSym, rightSym)
 		}
 		return(goodLin)
 		

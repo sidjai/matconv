@@ -36,3 +36,10 @@ test_that("Can slice with mult struct instances",{
 	
 	
 })
+
+test_that("Negative case doesn't do anything",{
+	matLine <- "asdfas <- dat"
+	mp <- makeSliceMap(matClass = "structure", rClass = "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfas <- dat")))
+})
