@@ -22,12 +22,12 @@ getBetween <- function(sin, left, right,
 			attr(rightPos, "match.length") <- 1
 		}
 	}
-
-	if(leftPos < 0){
-		rightPos <- leftPos
-	}
-	if(rightPos < 0){
-		leftPos <- rightPos
+	
+	ind <- length(leftPos)
+	while(ind > 0){
+		if(leftPos[ind] < 0) rightPos[ind] <- leftPos[ind]
+		if(rightPos[ind] < 0) leftPos[ind] <- rightPos[ind]
+		ind <- (ind - 1)
 	}
 
 
