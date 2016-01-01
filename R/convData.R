@@ -53,7 +53,8 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	return(function(lin){
 		
 		goodLin <- lin
-		guts <- getBetween(goodLin, leftSym, rightSym)
+		
+		guts <- getBetween(removeStrings(lin), leftSym, rightSym)
 		while(nzchar(guts)){
 			bef <- goodLin
 			
@@ -65,11 +66,17 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 				rout <- paste0(rBounds[1], guts, rBounds[2])
 				getBetween(goodLin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
 			}
-			guts <- getBetween(goodLin, leftSym, rightSym)
+			guts <- getBetween(removeStrings(goodLin), leftSym, rightSym)
 		}
 		return(goodLin)
 		
 	})
+}
+
+removeStrings <- function(lin){
+	noStringLin <- getBetween(lin, "'", "'", insertChar = "")
+	noStringLin <- getBetween(noStringLin, '"', '"', insertChar = "")
+	return(noStringLin)
 }
 
 getMatLabClassBounds <- function(matClass){

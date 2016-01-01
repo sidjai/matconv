@@ -43,3 +43,11 @@ test_that("Negative case doesn't do anything",{
 	res <- mp(matLine)
 	expect_true(!is.na(match(res, "asdfas <- dat")))
 })
+
+test_that("Doesn't pick up cases in strings",{
+	matLine <- "csvFile <- [beg num2str(sh - isunix()) 'h.csv']"
+	mp <- makeSliceMap(matClass = "structure", rClass = "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, matLine)))
+	
+})
