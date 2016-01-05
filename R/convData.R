@@ -54,7 +54,7 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 		
 		goodLin <- lin
 		
-		guts <- getBetween(removeStrings(lin), leftSym, rightSym)
+		guts <- shExtractData(lin, leftSym, rightSym, type = "slice")
 		while(nzchar(guts)){
 			bef <- goodLin
 			
@@ -77,6 +77,26 @@ removeStrings <- function(lin){
 	noStringLin <- getBetween(lin, "'", "'", insertChar = "")
 	noStringLin <- getBetween(noStringLin, '"', '"', insertChar = "")
 	return(noStringLin)
+}
+
+shExtractData <- function(lin, leftSym, rightSym, type = c("inst", "slice")[1]){
+	preLin <- lin
+	if(type == "slice") preLin <- removeStrings(preLin)
+	guts <- getBetween(preLin, leftSym, rightSym)
+	
+	equ <- regexpr("[<]-|=", preLin)
+	st <- regexpr(paste0("\\", leftSym), preLin)
+	
+	varNamePos <- regexpr(paste0("\\w+\\", leftSym), preLin)
+	
+	
+	if(type == "inst"){
+		if(equ > st || varNamePos > 0) guts <- "" 
+	} else {
+		if(varNamePos < 0) guts <- ""
+	}
+	
+	return(guts)
 }
 
 getMatLabClassBounds <- function(matClass){
@@ -132,14 +152,12 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 
 
 	return(function(lin){
-		equ <- regexpr("[<]-|=", lin)
-		st <- regexpr(paste0("\\", leftSym), lin)
+		guts <- shExtractData(lin, leftSym, rightSym, type = "inst")
 		
-		if(equ > st){
+		if(!nzchar(guts)){
 			return(lin)
 		} else {
-
-			guts <- getBetween(lin, leftSym, rightSym)
+			
 			rout <- switch(rClass,
 				vector = sprintf("c(%s)", paste(splitMatVec(guts), collapse = ", ")),
 				data.frame = as.data.frame(matrixify(guts)),
@@ -155,17 +173,17 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 }
 
 matrixify <- function(lin){
-	noNums <- gsub("\\d+(\\.\\d+)?", "|", lin)
+	noNums <- gsub("\\d+(\\.\\d+)?|NA|NaN", "|", lin)
 	numVec <- splitMatVec(lin)
 	numVec <- as.numeric(numVec)
 
 	refMat <- lapply(strsplit(noNums, "[|]"), function(vec){
 
-		rows <- grep("[;]", vec)
+		rows <- c(1, grep("[;]", vec))
 		cols <- c(1, grep("\\s|[,]", vec))
 
-		rowInd <- findInterval(1:length(vec), rows) + 1
-		tem <- c(rows[1] - 1, diff(c(rows, length(vec)+1)))
+		rowInd <- findInterval(1:length(vec), rows, rightmost.closed = FALSE)
+		tem <- diff(c(rows, length(vec)+1))
 		colInd <- c(lapply(tem, function(x){1:x}), recursive = TRUE)
 		if(length(rowInd) - length(colInd) != 0) stop("non equal in matrixfy")
 		return(cbind(rowInd, colInd))

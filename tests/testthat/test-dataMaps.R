@@ -50,3 +50,12 @@ test_that("Data maps doesn't pick up non-instantiations",{
 	
 	
 })
+
+test_that("Missing numbers can be inputted as data",{
+	dataMap <- makeDataMap("{", "}", "matrix")
+	NATest <- "stmTable <- {NaN}"
+	res <- dataMap(NATest)
+	eval(parse(text = res))
+	expect_true(is.nan(stmTable[1]))
+})
+
