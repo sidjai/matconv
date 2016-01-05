@@ -41,7 +41,7 @@ sortrows--if 1: ,%1[order(%1[,1]),]
 sortrows--if 2: ,%1[order(%1[,%2]),]
 sortrows--if length(out) ==2: ,list(order(%1[,1]),%1[,1]) --out [[1]] [[2]]
 find--if length(out) == 1L: which, 1
-find--if length(out) == 2L: which, 1, arr.ind = TRUE --out-m [ ,1] [ ,2]
+find--if length(out) == 2L: which, 1, arr.ind = TRUE --out [,1] [,2]
 hist:hist, 1, seq(min(%1), max(%1), length.out = %2 +1), plot = FALSE --out mids counts
 conv:convolve, 1, rev(%2), type = 'open'
 roots: polyroot, rev(%1)

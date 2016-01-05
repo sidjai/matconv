@@ -35,9 +35,10 @@ convFunctionsCalls <- function(linesMat, maps){
 
 		#Use other flags
 		if(!is.null(mp$flags$varOut)){
+			sliceAdd <- ifelse(grepl("\\[", mp$flags$varOut[1]), "", "$")
 			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
 			addCalls <- paste(
-				paste0(reqVars, " <- lout$", mp$flags$varOut),
+				paste0(reqVars, " <- lout", sliceAdd, mp$flags$varOut),
 				collapse = "; ")
 			out <- sprintf("lout <- %s); %s",
 				rargs,
@@ -201,17 +202,13 @@ parseFlags <- function(dictLines){
 			nchar(dictLines[ind]),
 			stDiv[[ind]] - 1
 		)
-
-		flagStr[[ind]] <- mapply(function(lt, rt){
-			substr(dictLines[ind], lt, rt)
-		}, left, right)
-
-		strSansFlags[ind] <- mapply(function(lt, rt){
-			paste0(
-				substr(strSansFlags[ind], 1, lt - 3),
-				substr(strSansFlags[ind], rt + 1, nchar(strSansFlags[ind]))
+		for(flagInd in 1:length(left)){
+			flagStr[[ind]] <- substr(dictLines[ind], left[flagInd], right[flagInd])
+			strSansFlags[ind] <- paste0(
+				substr(strSansFlags[ind], 1, left[flagInd] - 3),
+				substr(strSansFlags[ind], right[flagInd] + 1, nchar(strSansFlags[ind]))
 			)
-		}, left, right)
+		}
 	}
 
 	#make flags and funcSwitchers
@@ -230,7 +227,7 @@ parseFlags <- function(dictLines){
 
 	for(unind in uniFlagNums){
 
-		wantVec <- grep(uniMatName[unind], matName)
+		wantVec <- which(!is.na(match(matName, uniMatName[unind])))
 		if(dupsSet[unind]){
 
 			flags[[unind]] <- lapply(wantVec, function(x){
@@ -289,7 +286,7 @@ makeFunSwitcher <- function(lFlags){
 			}
 		} else {
 			if(para[1] == "length(out)"){
-				lengthOutVec[dictNum] <- as.integer(para[3])
+				lengthOutVec[dictNum] <- as.integer(gsub("L", "", para[3]))
 			} else {
 				matMap[[dictNum]]$arg <- para[1]
 				matMap[[dictNum]]$val <- gsub("L", "", para[3])
