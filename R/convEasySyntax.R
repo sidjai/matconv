@@ -62,7 +62,7 @@ convIfElse  <- function(linesMat){
 convSymbols <- function(linesMat){
 	
 	#Change "end"s in slicing 
-	sliceEndSet <- grepl("\\:end", linesMat)
+	sliceEndSet <- grepl("\\:*end\\s*\\}|\\)", linesMat)
 	
 	rightLoc <- gregexpr("\\}|\\)", linesMat[sliceEndSet])
 	leftLoc <- gregexpr("\\(|\\{", linesMat[sliceEndSet])
@@ -80,7 +80,7 @@ convSymbols <- function(linesMat){
 		endCap <- rev(lfts)[hier + 1]
 		sliceCut <- substr(lin, 1, endCap - 1)
 		varName <- regmatches(sliceCut, regexpr("\\w+$", sliceCut))
-		gsub("\\:end", sprintf(":length(%s)", varName), lin)
+		gsub("end", sprintf("length(%s)", varName), lin)
 		
 	}, "e", USE.NAMES = FALSE)
 	
