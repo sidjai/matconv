@@ -125,7 +125,7 @@ makeFuncMaps <- function(addDict = NULL, pathDict = ''){
 		wantVec <- anum
 
 		if(dupsMat[anum]){
-			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 1
+			lastDup <- which(!dupsMat[anum:length(argFuns)])[1] - 2 + anum
 			if(is.na(lastDup)){
 				#All dups
 				lastDup <- length(dupsMat)
