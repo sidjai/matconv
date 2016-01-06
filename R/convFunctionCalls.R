@@ -4,14 +4,15 @@ convFunctionsCalls <- function(linesMat, maps){
 	leftParList <- gregexpr("\\(", linesMat)
 	leftParInd <- vapply(leftParList, function(x){ rev(x)[1] }, 1)
 	potSet <- (assignInd < leftParInd)
+	
 
 	funName <- getBetween(linesMat[potSet], '-\\s', '(')
 	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
 	
-	inMapsSet <- funName %isKey% maps
-	potSet[!inMapsSet]<- FALSE
+	inMapsSet <- funName %in% names(maps)
+	potSet[which(potSet)[!inMapsSet]] <- FALSE
 
-	argMaps <- maps[funName][inMapsSet]
+	argMaps <- maps[funName[inMapsSet]]
 
 	convLines <- mapply(function(marg, mp, lin){
 		if(length(marg) ==  0){
@@ -49,7 +50,7 @@ convFunctionsCalls <- function(linesMat, maps){
 		}
 
 		return(out)
-	}, matArgs, argMaps, linesDes[potSet])
+	}, matArgs[inMapsSet], argMaps, linesDes[potSet])
 
 	linesDes[potSet] <- as.character(convLines)
 
