@@ -59,3 +59,50 @@ test_that("Missing numbers can be inputted as data",{
 	expect_true(is.nan(stmTable[1]))
 })
 
+test_that("Convert string data",{
+	dataMap <- makeDataMap(rClass = "vector", matClass = "string")
+	
+	test <- "csvFile <- [beg num2str(ispc()) '.csv']"
+	res <- dataMap(test)
+	
+	expect_equal(1, match("csvFile <- c(paste0(beg, num2str(ispc()), '.csv'))", res))
+})
+
+
+test_that("Convert string data with escaped quotes",{
+	dataMap <- makeDataMap(rClass = "vector", matClass = "string")
+	
+	test <- "comd <- [realWd '/xls2csv.vbs \"' fullpath '\" ' int2str(numSheetsParsed)]"
+	res <- dataMap(test)
+	
+	expect_true(grepl("paste", res))
+	expect_true(grepl("xls2csv", res))
+	
+	test2 <- "comd <- ['ssconvert -S \"' fullpath '\" \"' beg '%n.csv\"']"
+	res2 <- dataMap(test2)
+	expect_equal(1, match(res2, 
+		"comd <- c(paste0('ssconvert -S \"', fullpath, '\" \"', beg, '%n.csv\"'))"))
+})
+
+test_that("Does not convert data as a string concat",{
+	dataMap <- makeDataMap(rClass = "vector", matClass = "string")
+	
+	test <- "comd <- [23,2, 3.2; 7, 6, 8]"
+	res <- dataMap(test)
+	
+	expect_true(match(test, res) == 1)
+})
+
+test_that("Does not convert string cat as matrix", {
+	dataMap <- makeDataMap(matClass = "matrix", rClass = "matrix")
+	
+	test <- "comd <- [realWd '/xls2csv.vbs \"' fullpath '\" ' int2str(numSheetsParsed)]"
+	res <- dataMap(test)
+	
+	expect_true(match(test, res) == 1)
+	
+	
+	
+})
+
+

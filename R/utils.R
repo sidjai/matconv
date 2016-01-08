@@ -12,7 +12,29 @@ getBetween <- function(sin, left, right,
 	} else {
 		leftPos <- regexpr(paste0("\\", left), sin)
 		restSin <- substr(sin, leftPos + 1, nchar(sin))
-		rightPos <- regexpr(paste0("\\", right), restSin) + leftPos
+		
+		potRightPos <- gregexpr(paste0("\\", right), restSin)
+		extLeftPos <- gregexpr(paste0("\\", left), restSin)
+		if(length(potRightPos) > 0){
+			rightPos <- mapply(function(potR, extL){
+				ind <- 1
+				while(ind <= length(potR) && any(extL < potR[ind] & extL > 0)){
+					extL[ind] <- 99999
+					potR[ind] <- 99999
+					ind <- ind + 1
+				}
+				if(ind > length(potR)) return(-4)
+				else return(potR[ind])
+			}, potRightPos, extLeftPos)
+			
+			goodSet <- rightPos > 0
+			rightPos[goodSet] <- rightPos[goodSet] + leftPos[goodSet]
+			attr(rightPos, "match.length") <- attr(potRightPos[[1]], "match.length")[1]
+			attr(rightPos, "useBytes") <- TRUE
+		} else {
+			rightPos <- leftPos
+		}
+		
 		
 		if(shInclude){
 			leftPos <- leftPos - 1
@@ -40,7 +62,7 @@ getBetween <- function(sin, left, right,
 	} else {
 		newStr <- paste0(
 			substr(sin, 1, leftPos + attr(leftPos, "match.length") - 1 ),
-			insertChar,
+			ifelse(leftPos >= 0, insertChar, ""),
 			substr(sin, rightPos, nchar(sin))
 		)
 		return(newStr)
@@ -83,4 +105,50 @@ isClassName <- function(sin){
 			!grepl("is not a defined class", cond)
 		})
 	return(!is.logical(out) || out)
+}
+
+removeStrings <- function(linesMat){
+	
+	linesDes <- vapply(linesMat, function(lin){
+		bef <- noStringLin <- lin
+		ind <- 1
+		check <- TRUE
+		rightQuote <- getMainQuote(lin)
+		
+		while(check){
+			ins <- sprintf("#%s#", ind)
+			noStringLin <- getBetween(noStringLin, rightQuote, rightQuote, 
+				insertChar = ins, shInclude = TRUE)
+			check <- !all(bef == noStringLin)
+			bef <- noStringLin
+			ind <- ind + 1
+		}
+		return(noStringLin)
+	}, "sdf", USE.NAMES = FALSE)
+	return(linesDes)
+}
+
+getMainQuote <- function(lin){
+	rightQuote <- rep("'", length(lin))
+	doubleSet <- (regexpr("'", lin) > regexpr('"', lin) & regexpr('"', lin) > 0)
+	rightQuote[doubleSet] <- '"'
+	return(rightQuote)
+}
+
+putBackStrings <- function(argVec, lin){
+	bef <- lin
+	if(length(argVec) == 0) return(lin)
+	
+	rightQuote <- getMainQuote(lin)
+	
+	ins <- regmatches(argVec, gregexpr("[#]\\d+[#]", argVec))
+	needRep <- vapply(ins, function(x){ length(x) > 0 }, TRUE)
+	for(ind in which(needRep)){
+		realStr <- getBetween(lin, rightQuote, rightQuote, shInclude = TRUE)
+		argVec[ind] <- gsub("[#]\\d+[#]", realStr, argVec[ind])
+		
+		lin <- getBetween(lin, rightQuote, rightQuote, insertChar = "", shInclude = TRUE)
+		
+	}
+	return(argVec)
 }

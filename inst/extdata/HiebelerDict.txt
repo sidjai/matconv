@@ -76,7 +76,7 @@ openvar:fix, 1
 clear:rm 1 --space-sep
 disp:cat, 1
 input:readline, 1
-regexp:, gregexpr(, %1, %2)[[1]]
+regexp:, gregexpr(%2, %1)[[1]]
 pause:Sys.sleep, 1
 error:stop, 1
 eval:eval, parse(text = %1)

@@ -7,7 +7,12 @@ convFunctionsCalls <- function(linesMat, maps){
 	
 
 	funName <- getBetween(linesMat[potSet], '-\\s', '(')
-	matArgs <- strsplit(getBetween(linesMat[potSet], '(', ')'), ',')
+	guts <- getBetween(linesMat[potSet], '(', ')')
+	matArgs <- strsplit(removeStrings(guts), ",")
+	matArgs <- mapply(putBackStrings, matArgs, guts)
+	if(is.matrix(matArgs)){
+		matArgs <- lapply(seq_len(ncol(matArgs)), function(x) matArgs[,x])
+	}
 	
 	inMapsSet <- funName %in% names(maps)
 	potSet[which(potSet)[!inMapsSet]] <- FALSE

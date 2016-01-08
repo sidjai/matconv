@@ -73,12 +73,6 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	})
 }
 
-removeStrings <- function(lin){
-	noStringLin <- getBetween(lin, "'", "'", insertChar = "")
-	noStringLin <- getBetween(noStringLin, '"', '"', insertChar = "")
-	return(noStringLin)
-}
-
 shExtractData <- function(lin, leftSym, rightSym, type = c("inst", "slice")[1]){
 	preLin <- lin
 	if(type == "slice") preLin <- removeStrings(preLin)
@@ -102,9 +96,10 @@ shExtractData <- function(lin, leftSym, rightSym, type = c("inst", "slice")[1]){
 getMatLabClassBounds <- function(matClass){
 	
 	matDict <- list(
+		string = c("[", "]"),
 		structure = c(".", "W|$"),
 		cell = c("{", "}"),
-		matrix = c("[", "[")
+		matrix = c("[", "]")
 		)
 	
 	bounds <- matDict[[matClass]]
@@ -154,6 +149,12 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	return(function(lin){
 		guts <- shExtractData(lin, leftSym, rightSym, type = "inst")
 		
+		if(removeStrings(lin) == lin){
+			if(matClass == "string") guts <- ""
+		} else {
+			if(matClass == "matrix") guts <- ""
+		}
+		
 		if(!nzchar(guts)){
 			return(lin)
 		} else {
@@ -174,6 +175,7 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 
 matrixify <- function(lin){
 	noNums <- gsub("\\d+(\\.\\d+)?|NA|NaN", "|", lin)
+	
 	numVec <- splitMatVec(lin)
 	numVec <- as.numeric(numVec)
 
@@ -205,9 +207,21 @@ matrixify <- function(lin){
 }
 
 splitMatVec <- function(sin){
+	bef <- sin
+	sin <- removeStrings(sin)
+	
+	stringFlag <- !(bef == sin)
 
 	allNums <- gsub(",", " ", gsub(";", " ", sin))
 	thingVec <- trimWhite(c(strsplit(allNums, " "), recursive = TRUE))
-	return(thingVec[nzchar(thingVec)])
+	
+	
+	thingVec <- thingVec[nzchar(thingVec)]
+	
+	return(if(stringFlag){
+		sprintf("paste0(%s)", paste(putBackStrings(thingVec, bef), collapse = ", "))
+	} else {
+		thingVec
+	})
 
 }

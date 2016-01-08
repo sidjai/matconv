@@ -75,3 +75,14 @@ test_that("getBetween picks up nothing if one of the positions aren't found",{
 	
 	
 })
+test_that("getBetween inserts nothing if one of the positions aren't found",{
+	res <- getBetween("dfg}sdfg", ".", "}", insertChar = "123123")
+	expect_equal(match(res, "dfg}sdfg"),1)
+	
+})
+
+test_that("getBetween is vectorized",{
+	res <- getBetween(rep("{dfg}sdfg", 2), "{", "}")
+	expect_true(all(grepl("dfg",res)))
+	
+})
