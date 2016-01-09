@@ -23,7 +23,8 @@ convUserFunctions <- function(linesMat){
   decInd <- noComInd[vapply(funInd, function(x){
     which(noComInd > x)[1]
     }, 1)] - 1
-  decObj <- rep("\tvarargin <- list(...)", length(decInd))
+  decObj <- rep("\tvarargin <- list(...)", length(which(varargSet)))
+  decInd <- decInd[varargSet]
 
 
   funName <- getBetween(linesFun, "- ", "(")
