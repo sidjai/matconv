@@ -64,3 +64,29 @@ test_that("Can parse using space separated args", {
 		"sort(hjkl, asdf)")
 
 })
+
+test_that("Can convert functions within the line", {
+	dict <- c(
+		"matsort--if 2:sort, 2, 1",
+		"matsort--if 3:sort, 3")
+	example <- c(
+		"thing <- 6 * 9 * lifeOffset(matsort(asdf, hjkl))")
+	map <- makeFuncMaps(dict)
+	result <- convFunctionsCalls(example, map)
+	expect_equal(result[1],
+		"thing <- 6 * 9 * lifeOffset(sort(hjkl, asdf))")
+	
+})
+
+test_that("Can convert functions with strings in it", {
+	dict <- c(
+		"matsort--if 2:sort, 2, 1",
+		"matsort--if 3:sort, 3")
+	example <- c(
+		"thing <- 6 * 9 * lifeOffset(matsort('Thing', hjkl))")
+	map <- makeFuncMaps(dict)
+	result <- convFunctionsCalls(example, map)
+	expect_equal(result[1],
+		"thing <- 6 * 9 * lifeOffset(sort(hjkl, 'Thing'))")
+	
+})

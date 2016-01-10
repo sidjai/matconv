@@ -5,59 +5,64 @@ convFunctionsCalls <- function(linesMat, maps){
 	leftParInd <- vapply(leftParList, function(x){ rev(x)[1] }, 1)
 	potSet <- (assignInd < leftParInd)
 	
-
-	funName <- getBetween(linesMat[potSet], '-\\s', '(')
-	guts <- getBetween(linesMat[potSet], '(', ')')
-	matArgs <- strsplit(removeStrings(guts), ",")
-	matArgs <- mapply(putBackStrings, matArgs, guts)
-	if(is.matrix(matArgs)){
-		matArgs <- lapply(seq_len(ncol(matArgs)), function(x) matArgs[,x])
-	}
+	noStringLin <- removeStrings(linesDes)
+	mapNames <- paste0(names(maps), "\\(")
 	
-	inMapsSet <- funName %in% names(maps)
-	potSet[which(potSet)[!inMapsSet]] <- FALSE
-
-	argMaps <- maps[funName[inMapsSet]]
-
-	convLines <- mapply(function(marg, mp, lin){
-		if(length(marg) ==  0){
-			return("")
+	linMapMat <- as.matrix(vapply(mapNames, function(pat){
+		grepl(pat, noStringLin)
+	},rep(TRUE, length(linesDes)), USE.NAMES = FALSE))
+	
+	linMapVec <- which(linMapMat, arr.ind = TRUE, useName = FALSE)
+	
+	convSeq <- if(nrow(linMapVec) > 0){ 1:nrow(linMapVec) } else { NULL }
+	for(convInd in convSeq){
+		lin <- linesDes[linMapVec[convInd, 1]]
+		map <- maps[[linMapVec[convInd, 2]]]
+		pat <- mapNames[linMapVec[convInd, 2]]
+		funcStart <- regexpr(pat, lin)
+		restLin <- substr(lin, funcStart, nchar(lin)) 
+		guts <- getBetween(restLin, "(", ")")
+		matArgs <- strsplit(removeStrings(guts), ",")[[1]]
+		matArgs <- putBackStrings(matArgs, guts)
+		if(length(matArgs) ==  0) next
+		
+		if(!(is.null(map$flags$spaceSepMatArgs))){
+			matArgs <- strsplit(lin, " ")[[1]]
 		}
-
-		if(!(is.null(mp$flags$spaceSepMatArgs))){
-			marg <- strsplit(lin, " ")[[1]]
-		}
-		marg <- trimWhite(marg)
-
-		if(length(mp$argMap) == 1){
+		matArgs <- trimWhite(matArgs)
+		
+		if(length(map$argMap) == 1){
 			useMapInd <- 1
 		} else {
 			#Multiple dictionaries per matlab function
 			#use fun switcher
-			useMapInd <- mp$flags$multSwitch(marg)
+			useMapInd <- map$flags$multSwitch(matArgs)
 		}
-
-		rargs <- mp$argMap[[useMapInd]](marg)$rargs
-
+		
+		rargs <- map$argMap[[useMapInd]](matArgs)$rargs
+		
 		#Use other flags
-		if(!is.null(mp$flags$varOut)){
-			sliceAdd <- ifelse(grepl("\\[", mp$flags$varOut[1]), "", "$")
+		if(!is.null(map$flags$varOut)){
+			sliceAdd <- ifelse(grepl("\\[", map$flags$varOut[1]), "", "$")
 			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
 			addCalls <- paste(
-				paste0(reqVars, " <- lout", sliceAdd, mp$flags$varOut),
+				paste0(reqVars, " <- lout", sliceAdd, map$flags$varOut),
 				collapse = "; ")
 			out <- sprintf("lout <- %s); %s",
 				rargs,
 				addCalls)
-
+			
 		} else {
-			out <- getBetween(lin, '-\\s', ')', rargs)
+			out <- getBetween(restLin, '', ')',
+				insertChar = rargs, whatIsEmpty = "first")
+			out <- paste0(
+				substr(lin, 1, funcStart - 1),
+				out)
 		}
+		
+		linesDes[linMapVec[convInd, 1]]	<- as.character(out)
+	}
 
-		return(out)
-	}, matArgs[inMapsSet], argMaps, linesDes[potSet])
-
-	linesDes[potSet] <- as.character(convLines)
 
 	#deal with space sep ones
 	spaceArgSet <- vapply(maps, function(x){ !is.null(x$flags$spaceSepMatArgs) }, FALSE)
@@ -65,14 +70,14 @@ convFunctionsCalls <- function(linesMat, maps){
 	spaceLineSet <- vapply(potSpace, function(x){
 		!is.na(match(x[1], names(maps[spaceArgSet])))
 	}, TRUE)
-	matArgs[spaceLineSet] <- strsplit(linesMat[spaceLineSet], " ")
+	spaceArgs <- strsplit(linesMat[spaceLineSet], " ")
 	if(any(spaceArgSet) && any(spaceLineSet)){
 		linesDes[spaceLineSet] <- mapply(function(marg, mp){
 			rout <- mp$argMap[[1]](marg[-1])$rargs
 
 			out <- paste0(paste(rout, collapse = ", "), ")")
 			return(out)
-		},matArgs[spaceLineSet], maps[spaceArgSet])
+		}, spaceArgs, maps[spaceArgSet])
 	}
 
 

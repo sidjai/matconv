@@ -75,8 +75,9 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 
 shExtractData <- function(lin, leftSym, rightSym, type = c("inst", "slice")[1]){
 	preLin <- lin
-	if(type == "slice") preLin <- removeStrings(preLin)
+	preLin <- removeStrings(preLin)
 	guts <- getBetween(preLin, leftSym, rightSym)
+	if(type == "inst") guts <- putBackStrings(guts, lin)
 	
 	equ <- regexpr("[<]-|=", preLin)
 	st <- regexpr(paste0("\\", leftSym), preLin)

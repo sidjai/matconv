@@ -72,7 +72,7 @@ getBetween <- function(sin, left, right,
 dealEmpty <- function(pos, type, fun = NULL, lin = ""){
 	out <- switch(type,
 		oneChar = defaultOneChar(pos, fun),
-		first = 1,
+		first = 0,
 		last = nchar(lin))
 	attr(out, "match.length") <- 1
 	return(out)
@@ -144,11 +144,13 @@ putBackStrings <- function(argVec, lin){
 	ins <- regmatches(argVec, gregexpr("[#]\\d+[#]", argVec))
 	needRep <- vapply(ins, function(x){ length(x) > 0 }, TRUE)
 	for(ind in which(needRep)){
-		realStr <- getBetween(lin, rightQuote, rightQuote, shInclude = TRUE)
-		argVec[ind] <- gsub("[#]\\d+[#]", realStr, argVec[ind])
-		
-		lin <- getBetween(lin, rightQuote, rightQuote, insertChar = "", shInclude = TRUE)
-		
+		for(pat in ins[[ind]]){
+			realStr <- getBetween(lin, rightQuote, rightQuote, shInclude = TRUE)
+			argVec[ind] <- gsub(pat, realStr, argVec[ind])
+			
+			lin <- getBetween(lin, rightQuote, rightQuote,
+				insertChar = "", shInclude = TRUE)
+		}
 	}
 	return(argVec)
 }
