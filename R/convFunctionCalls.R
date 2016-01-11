@@ -12,7 +12,7 @@ convFunctionsCalls <- function(linesMat, maps){
 		grepl(pat, noStringLin)
 	},rep(TRUE, length(linesDes)), USE.NAMES = FALSE))
 	
-	linMapVec <- which(linMapMat, arr.ind = TRUE, useName = FALSE)
+	linMapVec <- which(linMapMat, arr.ind = TRUE, useNames = FALSE)
 	
 	convSeq <- if(nrow(linMapVec) > 0){ 1:nrow(linMapVec) } else { NULL }
 	for(convInd in convSeq){
