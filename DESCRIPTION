@@ -1,7 +1,7 @@
 Package: matconv
 Type: Package
 Title: A code converter from the MatLab/Octave language to R
-Version: 0.2.0.9000
+Version: 0.3.0
 Authors@R: c(person("Siddarta", "Jairam", email = "sidjsb@gmail.com", role = c("aut", "cre")),
   person("David", "Hiebeler", email = "hiebeler@math.umaine.edu", role = "ctb"))
 Maintainer: Siddarta Jairam <sidjsb@gmail.com>
