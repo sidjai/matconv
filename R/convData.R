@@ -17,10 +17,11 @@ convData <- function(linesMat, maps){
 #' @inheritParams makeDataMap
 #' @return A function that takes in a string and converts all the given slice
 #'   notation
-#' @details Slice notation for matrices are tricky because they can easily be confused withThe requirements for conversion are the bounds given by both left
-#'   and right symbols or the matLab class. The matlab class allows for the
-#'   conversion of structures but is really just a dictionary for the different
-#'   bounds. 
+#' @details Slice notation for matrices are tricky because they can easily be
+#'   confused with the requirements for conversion are the bounds given by both
+#'   left and right symbols or the Matlab class. The Matlab class allows for the
+#'   conversion of structures but is really just a dictionary for the different 
+#'   bounds.
 #' @export
 makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	
@@ -30,7 +31,7 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	
 	if(!nzchar(matClass)){
 		if(missing(leftSym) || missing(rightSym)){
-			stop("Please provide either the bounds of the data or the matlab class")
+			stop("Please provide either the bounds of the data or the Matlab class")
 		}
 	} else {
 		syms <- getMatLabClassBounds(matClass)
@@ -116,15 +117,15 @@ getMatLabClassBounds <- function(matClass){
 
 #' Make the maps for the data
 #'
-#' @param leftSym The left symbol that contains the matlab data
-#' @param rightSym the right symbol that contains the matlab data
+#' @param leftSym The left symbol that contains the Matlab data
+#' @param rightSym the right symbol that contains the Matlab data
 #' @param rClass The formal r class name that defines what the R data is
 #'   outputted as
-#' @param matClass The name of the matlab class that should be converted
-#' @return A function that takes in a matlab lines and changes the data into R
+#' @param matClass The name of the Matlab class that should be converted
+#' @return A function that takes in a Matlab lines and changes the data into R
 #'   data lines
 #' @details The requirements for conversion are the bounds given by both left
-#'   and right symbols or the matLab class. The matlab class allows for the
+#'   and right symbols or the MatLab class. The Matlab class allows for the
 #'   conversion of structures but is really just a dictionary for the different
 #'   bounds.
 #' @export

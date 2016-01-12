@@ -53,7 +53,7 @@ matCode <- c("function [out] = csvReadPretty(csvPath, hd)",
 ```
 ## Basic Conversion
 
-If you just want a basic conversion with R syntax, calling "mat2r" with just the matLab code.
+If you just want a basic conversion with R syntax, calling "mat2r" with just the Matlab code.
 
 ```{r basic}
 
@@ -63,14 +63,14 @@ names(out)
 
 The function outputs a list with the converted code as "rCode" and the original code as "matCode". This is so you can easily look at the differences between the two and what exactly the program is doing. There is also a default message that shows the number of lines in each. This can be turned off using "verbose = 0". Verbose 2 makes it so that the resultant code is outputted as a message. The code can be written by supplying a destination path with the "pathOutR" parameter.
 
-For a more complicated conversion you can use function covnerters or data converters. The function converters change some of the base functions of MatLab to R. A whole dictionary notation can be used to convert what ever functions you want which can be seen used in "vignettes/functionCalls.rmd". With the "makeFuncMaps" function and these dictionaries a whole slew of conversions can be specified. As a start, the base MatLab functions have been made into dictionary lines using the [reference](http://www.math.umaine.edu/~hiebeler/comp/matlabR.pdf) by David Hiebler. This is included in the package as external data and can be used as below.
+For a more complicated conversion you can use function covnerters or data converters. The function converters change some of the base functions of Matlab to R. A whole dictionary notation can be used to convert what ever functions you want which can be seen used in "vignettes/functionCalls.rmd". With the "makeFuncMaps" function and these dictionaries a whole slew of conversions can be specified. As a start, the base Matlab functions have been made into dictionary lines using the [reference](http://www.math.umaine.edu/~hiebeler/comp/matlabR.pdf) by David Hiebler. This is included in the package as external data and can be used as below.
 
 ```{r functionMaps}
 hMaps <- makeFuncMaps(
 	pathDict = system.file("extdata", "HiebelerDict.txt", package = "matconv"))
 ```
 
-There are also data converters that come in either instation ("makeDataMap") or slicing (makeSliceMap). To identify the MatLab code that needs converting, you can either give the left and right symbol that encloses the data or the MatLab class. The output is determined by the Rclass name given to the converter. Base converters are included as R code in the external data and can be used as below.
+There are also data converters that come in either instation ("makeDataMap") or slicing (makeSliceMap). To identify the Matlab code that needs converting, you can either give the left and right symbol that encloses the data or the Matlab class. The output is determined by the Rclass name given to the converter. Base converters are included as R code in the external data and can be used as below.
 
 ```{r dataConverters}
 source(system.file("extdata", "defDataConv.R", package = "matconv"))

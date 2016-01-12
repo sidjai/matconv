@@ -7,17 +7,17 @@
 makeDataMap(leftSym, rightSym, rClass, matClass = "")
 }
 \arguments{
-\item{leftSym}{The left symbol that contains the matlab data}
+\item{leftSym}{The left symbol that contains the Matlab data}
 
-\item{rightSym}{the right symbol that contains the matlab data}
+\item{rightSym}{the right symbol that contains the Matlab data}
 
 \item{rClass}{The formal r class name that defines what the R data is
 outputted as}
 
-\item{matClass}{The name of the matlab class that should be converted}
+\item{matClass}{The name of the Matlab class that should be converted}
 }
 \value{
-A function that takes in a matlab lines and changes the data into R
+A function that takes in a Matlab lines and changes the data into R
   data lines
 }
 \description{
@@ -25,7 +25,7 @@ Make the maps for the data
 }
 \details{
 The requirements for conversion are the bounds given by both left
-  and right symbols or the matLab class. The matlab class allows for the
+  and right symbols or the MatLab class. The Matlab class allows for the
   conversion of structures but is really just a dictionary for the different
   bounds.
 }

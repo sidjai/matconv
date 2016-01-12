@@ -7,14 +7,14 @@
 makeSliceMap(leftSym, rightSym, rClass, matClass = "")
 }
 \arguments{
-\item{leftSym}{The left symbol that contains the matlab data}
+\item{leftSym}{The left symbol that contains the Matlab data}
 
-\item{rightSym}{the right symbol that contains the matlab data}
+\item{rightSym}{the right symbol that contains the Matlab data}
 
 \item{rClass}{The formal r class name that defines what the R data is
 outputted as}
 
-\item{matClass}{The name of the matlab class that should be converted}
+\item{matClass}{The name of the Matlab class that should be converted}
 }
 \value{
 A function that takes in a string and converts all the given slice
@@ -24,9 +24,10 @@ A function that takes in a string and converts all the given slice
 Make the maps for converting slice notation
 }
 \details{
-Slice notation for matrices are tricky because they can easily be confused withThe requirements for conversion are the bounds given by both left
-  and right symbols or the matLab class. The matlab class allows for the
-  conversion of structures but is really just a dictionary for the different
+Slice notation for matrices are tricky because they can easily be
+  confused with the requirements for conversion are the bounds given by both
+  left and right symbols or the Matlab class. The Matlab class allows for the
+  conversion of structures but is really just a dictionary for the different 
   bounds.
 }
 

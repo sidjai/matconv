@@ -53,7 +53,7 @@ showExampleConv(
 
 ```
 
-The dictionary is turned into converting functions that are returned as a list of functions using the function "makeFuncMaps". These are named with the matLab function so the right converter is chosen using name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
+The dictionary is turned into converting functions that are returned as a list of functions using the function "makeFuncMaps". These are named with the Matlab function so the right converter is chosen using name subsetting. You can also do literal strings and strings that have references to the arguments using a percent sign as shown below:
 
 ```{r Function_literals}
 showExampleConv(
@@ -70,7 +70,7 @@ In the second example, R has an extra argument of number of outputs wanted which
 
 In the third example, there isn't a good translation for the "erf" function but it can be done using the mathematical formula. This can be done by just leaving the R function blank and using a literal string.
 
-MatLab has a lot of functions that change dramatically with different inputs. This can be done using flags on the name of the matLab function. Instead of returning a list of one function in the map it returns multiple functions for conversion. The decision making to use one function over the other is given as another function depending on the inputs in "map\$flags\$DictSwitch". So the calls that are used are used are grabbing the matLab arguments and throwing them into "dictSwitch" to figure out the index of the function to use. The rest of the flags can be found using that index as well as the function to convert the matLab line. The switching flags that can be used are as follows:
+Matlab has a lot of functions that change dramatically with different inputs. This can be done using flags on the name of the Matlab function. Instead of returning a list of one function in the map it returns multiple functions for conversion. The decision making to use one function over the other is given as another function depending on the inputs in "map\$flags\$DictSwitch". So the calls that are used are used are grabbing the Matlab arguments and throwing them into "dictSwitch" to figure out the index of the function to use. The rest of the flags can be found using that index as well as the function to convert the Matlab line. The switching flags that can be used are as follows:
 
 * number of arguments (--if 2)
 * an argument is equal to a particular value (--if 2 == 2L)

@@ -37,7 +37,7 @@ showExampleConv <- function(matIn){
 ```
 ## Basic calls
 
-The first thing that the translator does is go through the program and convert the basic syntax from MatLab to R. This includes the following:
+The first thing that the translator does is go through the program and convert the basic syntax from Matlab to R. This includes the following:
 
 1. Changing symbols around ('~' to '!', 'end' to '}')
 2. Get rid of the semicolons at the end of the line
@@ -73,7 +73,7 @@ showExampleConv(example)
 
 In matlab there is a distinction between script files and function files. If a function file is supplied (first word is "function") than the function definitions will be changed with some of syntax.
 
-The returned objects are gathered and put in a 'return' statement at the end of the function. If there is more than one return statement a list of those objects are returned. Default inputs or an unknown length of inputs into a matLab function is handled using a protected word 'varargin'. The closest R equivalent is '...' which will be turned into a list as the variable 'varargin' in the R version. There is a whole family of input and output handlers in matLab but this is the most useful in my eyes so I gave it higher priority. Examples of this type of conversion is shown below.
+The returned objects are gathered and put in a 'return' statement at the end of the function. If there is more than one return statement a list of those objects are returned. Default inputs or an unknown length of inputs into a Matlab function is handled using a protected word 'varargin'. The closest R equivalent is '...' which will be turned into a list as the variable 'varargin' in the R version. There is a whole family of input and output handlers in Matlab but this is the most useful in my eyes so I gave it higher priority. Examples of this type of conversion is shown below.
 
 ```{r userFunctions}
 example <- c("function [ dat ] = xlsReadPretty(varargin))", "  didThing = 1*3;", "  dat = didThing / 3;", "end")
@@ -81,4 +81,4 @@ showExampleConv(example)
 
 ```
 
-In another version, there could be options to make this conversion more integrated with the rest of the code or specifying another return class other than 'list'. This is a precursour to the function converters by adding these user functions into the dictionary of MatLab base functions to R base functions.
+In another version, there could be options to make this conversion more integrated with the rest of the code or specifying another return class other than 'list'. This is a precursour to the function converters by adding these user functions into the dictionary of Matlab base functions to R base functions.

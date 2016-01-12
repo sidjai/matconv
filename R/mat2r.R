@@ -2,7 +2,7 @@
 #'
 #'The top level driver function to call the converting functions and handle the
 #'input and output.
-#' @param inMat A file path with the input MatLab / Octave code to be converted
+#' @param inMat A file path with the input Matlab / Octave code to be converted
 #' or a character vector of the code that needs to be converted
 #' @param pathOutR A file path with the desired output file location
 #' @param funcConverters A list of function converters that the user wants to

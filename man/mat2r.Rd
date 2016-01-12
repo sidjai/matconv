@@ -8,7 +8,7 @@ mat2r(inMat, pathOutR = "", funcConverters = NULL, dataConverters = NULL,
   verbose = 1)
 }
 \arguments{
-\item{inMat}{A file path with the input MatLab / Octave code to be converted
+\item{inMat}{A file path with the input Matlab / Octave code to be converted
 or a character vector of the code that needs to be converted}
 
 \item{pathOutR}{A file path with the desired output file location}
