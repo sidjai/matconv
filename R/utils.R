@@ -99,6 +99,7 @@ defaultOneChar <- function(oppsMatch, func){
 	return(defMatch)
 }
 
+#' @importFrom methods new
 isClassName <- function(sin){
 	out <- tryCatch(new(sin),
 		error = function(cond){

@@ -17,6 +17,8 @@ Description: Transfering over a code base from Matlab to R is often a repetitive
     base function and data structure conversion is done quickly so that the
     maintainer can focus on changes to the design structure.
 License: GPL (>= 2)
+Imports:
+    methods
 Suggests:
     knitr,
     testthat
