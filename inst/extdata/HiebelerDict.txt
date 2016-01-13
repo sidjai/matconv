@@ -7,7 +7,7 @@ diag:diag,1,nrow = length(%1)
 repmat:kronecker(matrix, 1L, 2, %3),1
 hilb:Matrix::Hilbert,1
 reshape:array,1,c(%...)
-mod: , 1, %%, 2
+mod: , 1 %% 2
 ceil:ceiling,1
 fix:trunc,1
 erf: ,2 * pnorm(%1 * sqrt(2)) - 1

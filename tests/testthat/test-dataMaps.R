@@ -105,4 +105,11 @@ test_that("Does not convert string cat as matrix", {
 	
 })
 
-
+test_that("R lists can be selected", {
+	dataMap <- makeDataMap(matClass = "cell", rClass = "list")
+	test <- "comd <- {23,2, 4; 'string', 6, 8}"
+	res <- dataMap(test)
+	
+	expect_equal("comd <- list(list(23, 2, 4), list('string', 6, 8))", res)
+	
+})

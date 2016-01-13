@@ -30,4 +30,13 @@ Slice notation for matrices are tricky because they can easily be
   conversion of structures but is really just a dictionary for the different 
   bounds.
 }
+\examples{
+  sliceMap <- makeSliceMap("{", "}", "list")
+  sliceMap("junk <- importData{300}")
+  # "junk <- importData[[300]]"
+  
+  sliceMap <- makeSliceMap(matClass = "structure", rClass = "list")
+  sliceMap("junk <- students.AP.GPA")
+  # junk <- students[['AP']][['GPA']]
+}
 

@@ -22,6 +22,14 @@ convData <- function(linesMat, maps){
 #'   left and right symbols or the Matlab class. The Matlab class allows for the
 #'   conversion of structures but is really just a dictionary for the different 
 #'   bounds.
+#' @examples
+#'   sliceMap <- makeSliceMap("{", "}", "list")
+#'   sliceMap("junk <- importData{300}")
+#'   # "junk <- importData[[300]]"
+#'   
+#'   sliceMap <- makeSliceMap(matClass = "structure", rClass = "list")
+#'   sliceMap("junk <- students.AP.GPA")
+#'   # junk <- students[['AP']][['GPA']]
 #' @export
 makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 	
@@ -128,6 +136,14 @@ getMatLabClassBounds <- function(matClass){
 #'   and right symbols or the MatLab class. The Matlab class allows for the
 #'   conversion of structures but is really just a dictionary for the different
 #'   bounds.
+#' @examples
+#' 	 dataMap <- makeDataMap("[", "]", "matrix")
+#' 	 dataMap("thing <- [23,2, 3.2; 7, 6, 8]")
+#' 	 # "thing <- matrix(c(23, 2, 3.2, 7, 6, 8), nrow = 2, ncol = 3)"
+#' 	 
+#' 	 dataMap <- makeDataMap(rClass = "list", matClass = "cell")
+#' 	 dataMap("otherThing <- {23,2, '3.2'; NaN, 6, 8}")
+#' 	 # "otherThing <- list(list(23, 2, '3.2'), list(NaN, 6, 8))"
 #' @export
 makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 
@@ -150,8 +166,8 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 
 	return(function(lin){
 		guts <- shExtractData(lin, leftSym, rightSym, type = "inst")
-		
-		if(removeStrings(lin) == lin){
+		stringFlag <- !(removeStrings(lin) == lin)
+		if(!stringFlag){
 			if(matClass == "string") guts <- ""
 		} else {
 			if(matClass == "matrix") guts <- ""
@@ -162,9 +178,10 @@ makeDataMap <- function(leftSym, rightSym, rClass, matClass = ""){
 		} else {
 			
 			rout <- switch(rClass,
-				vector = sprintf("c(%s)", paste(splitMatVec(guts), collapse = ", ")),
-				data.frame = as.data.frame(matrixify(guts)),
-				list = as.list(matrixify(guts)),
+				vector = sprintf("c(%s)",
+					paste(splitMatVec(guts, stringFlag), collapse = ", ")),
+				data.frame = sprintf("as.data.frame(%s)", matrixify(guts)),
+				list = listify(guts),
 				matrix = matrixify(guts)
 			)
 			return(
@@ -181,17 +198,7 @@ matrixify <- function(lin){
 	numVec <- splitMatVec(lin)
 	numVec <- as.numeric(numVec)
 
-	refMat <- lapply(strsplit(noNums, "[|]"), function(vec){
-
-		rows <- c(1, grep("[;]", vec))
-		cols <- c(1, grep("\\s|[,]", vec))
-
-		rowInd <- findInterval(1:length(vec), rows, rightmost.closed = FALSE)
-		tem <- diff(c(rows, length(vec)+1))
-		colInd <- c(lapply(tem, function(x){1:x}), recursive = TRUE)
-		if(length(rowInd) - length(colInd) != 0) stop("non equal in matrixfy")
-		return(cbind(rowInd, colInd))
-	})
+	refMat <- lapply(strsplit(noNums, "[|]"), getRowColFromData)
 
 	rMat <- simplify2array(refMat)
 	maxes <- vapply(1:dim(rMat)[3], function(x){
@@ -208,11 +215,48 @@ matrixify <- function(lin){
 
 }
 
-splitMatVec <- function(sin){
+getRowColFromData <- function(vin){
+	rows <- c(1, grep("[;]", vin))
+	cols <- c(1, grep("\\s|[,]", vin))
+	
+	rowInd <- findInterval(1:length(vin), rows, rightmost.closed = FALSE)
+	tem <- diff(c(rows, length(vin)+1))
+	colInd <- c(lapply(tem, function(x){1:x}), recursive = TRUE)
+	if(length(rowInd) - length(colInd) != 0) stop("non equal in matrixfy")
+	return(cbind(rowInd, colInd))
+}
+
+
+listify <- function(lin){
+	bef <- lin
+	lin <- removeStrings(lin)
+	
+	coorVec <- regmatches(lin, gregexpr("\\,|\\;",lin))
+	coorVec <- lapply(coorVec, function(x) c("",x))
+	
+	refMat <- lapply(coorVec, getRowColFromData)
+	
+	ele <- splitMatVec(lin)
+	ele <- putBackStrings(ele, bef)
+	
+	out <- vapply(refMat, function(RCMat){
+		innerLists <- c()
+		for(rind in unique(RCMat[, "rowInd"])){
+			thisRowSet <- (RCMat[, "rowInd"] == rind)
+			innerLists[rind] <- sprintf("list(%s)",
+				paste(ele[thisRowSet], collapse = ", "))
+		}
+		
+		return(paste(innerLists, collapse = ", "))
+		
+	}, "e")
+	return(sprintf("list(%s)", out))
+	
+}
+
+splitMatVec <- function(sin, hasStrings = FALSE){
 	bef <- sin
 	sin <- removeStrings(sin)
-	
-	stringFlag <- !(bef == sin)
 
 	allNums <- gsub(",", " ", gsub(";", " ", sin))
 	thingVec <- trimWhite(c(strsplit(allNums, " "), recursive = TRUE))
@@ -220,7 +264,7 @@ splitMatVec <- function(sin){
 	
 	thingVec <- thingVec[nzchar(thingVec)]
 	
-	return(if(stringFlag){
+	return(if(hasStrings){
 		sprintf("paste0(%s)", paste(putBackStrings(thingVec, bef), collapse = ", "))
 	} else {
 		thingVec

@@ -16,7 +16,7 @@ or a character vector of the code that needs to be converted}
 \item{funcConverters}{A list of function converters that the user wants to
 use in this conversion made by \code{\link{makeFuncMaps}}}
 
-\item{dataConverters}{A list of function converters that the user wants to 
+\item{dataConverters}{A list of data converters that the user wants to 
 use in this conversion made by \code{\link{makeSliceMap}} or
 \code{\link{makeDataMap}}}
 
@@ -33,5 +33,19 @@ A list containing the original code (named matCode) and the converted code (name
 \description{
 The top level driver function to call the converting functions and handle the
 input and output.
+}
+\examples{
+matIn <- c("function [ dat ] = xlsReadPretty(varargin)", 
+ "  didThing = 1*3;",
+ "  dat = didThing / 3;",
+ "end")
+ mat2r(matIn, verbose = 0)$rCode
+
+# "xlsReadPretty <- function(...){" 
+# "\\tvarargin <- list(...)"
+# "  didThing <- 1*3"
+# "  dat <- didThing / 3"
+#"\\treturn(dat)"
+#"}"
 }
 

@@ -7,7 +7,7 @@
 #' @param pathOutR A file path with the desired output file location
 #' @param funcConverters A list of function converters that the user wants to
 #'   use in this conversion made by \code{\link{makeFuncMaps}}
-#' @param dataConverters A list of function converters that the user wants to 
+#' @param dataConverters A list of data converters that the user wants to 
 #'   use in this conversion made by \code{\link{makeSliceMap}} or
 #'   \code{\link{makeDataMap}}
 #' @param verbose A number indicating the amount of messages that should be outputed.
@@ -18,6 +18,19 @@
 #' }
 #'
 #' @return A list containing the original code (named matCode) and the converted code (named rCode).
+#' @examples
+#' matIn <- c("function [ dat ] = xlsReadPretty(varargin)", 
+#'  "  didThing = 1*3;",
+#'  "  dat = didThing / 3;",
+#'  "end")
+#'  mat2r(matIn, verbose = 0)$rCode
+#' 
+#' # "xlsReadPretty <- function(...){" 
+#' # "\tvarargin <- list(...)"
+#' # "  didThing <- 1*3"
+#' # "  dat <- didThing / 3"
+#' #"\treturn(dat)"
+#' #"}"
 #' @export
 mat2r <- function(inMat,
                   pathOutR ='',

@@ -87,10 +87,44 @@ convFunctionsCalls <- function(linesMat, maps){
 #' Turn dictionary lines into functions that map matlab to R function calls
 #'
 #' @param addDict An optional character vector with manufactored lines
-#' @param pathDict The path to a text file with the dictionry lines written to it
+#' @param pathDict The path to a text file with the dictionary lines written to it
 #'
-#' @return a list of functions with names of matlab functions and the function
-#' to change the matlab input into an R function call
+#' @return a list of functions to convert the arguments of a matlab function. It
+#'   comes with the names of matlab functions.
+#' 
+#' @details The output of the individual maps consits of the actual map for the
+#'   given matlab arguments as a vector and a list of flags included in the
+#'   dictionary. The argMap itself is a list of potential functions that could
+#'   be used if a some flags are detected in the dictionary line. A more
+#'   expansive look at the different dictionaries that could be used can be seen
+#'   in the base dictionary at "extdata/HiebelerDict.txt" or in the vignette
+#'   "vignettes/functionCalls.rmd". It returns a list with the R version of the
+#'   arguments with a left parentheisis.
+#' @examples
+#' 
+#' funcMap <- makeFuncMaps("trace: sum, diag(%1)")
+#' funcMap[['trace']]$argMap[[1]]("matThing")
+#' #$rargs
+#' # "sum(diag(matThing)"
+#' 
+#' funcMap <- makeFuncMaps("mod: , 1 %% 2")
+#' funcMap[['mod']]$argMap[[1]](c(4, 2))
+#' #$rargs
+#' # "(4, %%, 2"
+#' 
+#' test1 <- "mat"
+#' test2 <- c("mat", "2")
+#' 
+#' funcMap <- makeFuncMaps(c("size--if 1:dim, 1", "size--if 2: ,dim(%1)[%2]"))
+#' rightConv <- funcMap$size$flags$multSwitch(test1)
+#' funcMap$size$argMap[[rightConv]](test1)
+#' #$rargs
+#'  "dim(mat"
+#'  
+#' rightConv <- funcMap$size$flags$multSwitch(test2)
+#' funcMap$size$argMap[[rightConv]](test2)
+#' #$rargs
+#'  "dim(mat)[2]"
 #' @export
 makeFuncMaps <- function(addDict = NULL, pathDict = ''){
 	dictLines <- addDict

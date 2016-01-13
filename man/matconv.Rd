@@ -4,7 +4,7 @@
 \name{matconv}
 \alias{matconv}
 \alias{matconv-package}
-\title{matconv: Managing and querying Team Fortress 2 stats}
+\title{matconv: A Utility to Convert Matlab / Octave Code into R Code}
 \description{
 Transferring over a code base from Matlab to R is often a repetitive and
 inefficient use of time. This package provides a translator for Matlab /

@@ -1,4 +1,4 @@
-#' matconv: Managing and querying Team Fortress 2 stats
+#' matconv: A Utility to Convert Matlab / Octave Code into R Code
 #'
 #' Transferring over a code base from Matlab to R is often a repetitive and
 #' inefficient use of time. This package provides a translator for Matlab /
