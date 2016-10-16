@@ -26,6 +26,13 @@ convFunctionsCalls <- function(linesMat, maps){
 		guts <- getBetween(restLin, "(", ")")
 		matArgs <- strsplit(removeStrings(guts), ",")[[1]]
 		matArgs <- putBackStrings(matArgs, guts)
+		
+		matReqVars <- strsplit(
+			getBetween(
+				substr(lin, 1, assignInd[linMapVec[convInd, 1]]),
+				"[", "]")
+			, " ")[[1]]
+		
 		if(length(matArgs) ==  0) next
 		
 		if(!(is.null(map$flags$spaceSepMatArgs))){
@@ -38,19 +45,19 @@ convFunctionsCalls <- function(linesMat, maps){
 		} else {
 			#Multiple dictionaries per matlab function
 			#use fun switcher
-			useMapInd <- map$flags$multSwitch(matArgs)
+			useMapInd <- map$flags$multSwitch(matArgs, length(matReqVars))
 		}
 		
 		rargs <- map$argMap[[useMapInd]](matArgs)$rargs
 		
 		#Use other flags
-		if(!is.null(map$flags$varOut)){
-			sliceAdd <- ifelse(grepl("\\[", map$flags$varOut[1]), "", "$")
-			reqVars <- strsplit(getBetween(lin, "[", "]"), " ")[[1]]
+		varOut <- map$flags[[useMapInd]]$varOut
+		if(!is.null(varOut)){
+			sliceAdd <- ifelse(grepl("\\[", varOut[1]), "", "$")
 			addCalls <- paste(
-				paste0(reqVars, " <- lout", sliceAdd, map$flags$varOut),
+				paste0(matReqVars, " <- lout", sliceAdd, varOut),
 				collapse = "; ")
-			out <- sprintf("lout <- %s); %s",
+			out <- sprintf("lout <- %s); %s;",
 				rargs,
 				addCalls)
 			
@@ -250,7 +257,7 @@ parseFlags <- function(dictLines){
 			stDiv[[ind]] - 1
 		)
 		for(flagInd in 1:length(left)){
-			flagStr[[ind]] <- substr(dictLines[ind], left[flagInd], right[flagInd])
+			flagStr[[ind]] <- c(unlist(flagStr[[ind]]), substr(dictLines[ind], left[flagInd], right[flagInd]))
 			strSansFlags[ind] <- paste0(
 				substr(strSansFlags[ind], 1, left[flagInd] - 3),
 				substr(strSansFlags[ind], right[flagInd] + 1, nchar(strSansFlags[ind]))
@@ -280,7 +287,7 @@ parseFlags <- function(dictLines){
 			flags[[unind]] <- lapply(wantVec, function(x){
 				makeFlag(flagStr[[x]], makeSwitch = FALSE)
 			})
-			flags[[unind]]$multSwitch <- makeFunSwitcher(flagStr[wantVec])
+			flags[[unind]]$multSwitch <- makeFunSwitcher(lapply(flagStr, function(x){x[1]}))
 
 		} else {
 			flags[[unind]] <- makeFlag(flagStr[[wantVec]])
@@ -305,7 +312,6 @@ makeFlag <- function(vin, makeSwitch = TRUE){
 			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
 		} else if (flagName == "out"){
 			flag$varOut <- para[-1]
-			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
 		} else if (flagName == "space-sep"){
 			flag$spaceSepMatArgs <- TRUE
 		} else {
