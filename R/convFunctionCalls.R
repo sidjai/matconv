@@ -12,7 +12,9 @@ convFunctionsCalls <- function(linesMat, maps){
 		grepl(pat, noStringLin)
 	},rep(TRUE, length(linesDes)), USE.NAMES = FALSE))
 	
+	if(length(linesMat) == 1) linMapMat <- t(linMapMat)
 	linMapVec <- which(linMapMat, arr.ind = TRUE, useNames = FALSE)
+	
 	
 	convSeq <- if(nrow(linMapVec) > 0){ 1:nrow(linMapVec) } else { NULL }
 	for(convInd in convSeq){
@@ -303,6 +305,7 @@ makeFlag <- function(vin, makeSwitch = TRUE){
 			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
 		} else if (flagName == "out"){
 			flag$varOut <- para[-1]
+			if(makeSwitch) flag$multSwitch <- makeFunSwitcher(list(si))
 		} else if (flagName == "space-sep"){
 			flag$spaceSepMatArgs <- TRUE
 		} else {
@@ -341,18 +344,20 @@ makeFunSwitcher <- function(lFlags){
 
 	return(function(matArgs, numOut = 1){
 		useInd <- NULL
-		if(numOut > 1){
+		if(numOut > 1 || any(!is.na(lengthOutVec))){
 			useInd <- which(lengthOutVec == numOut)
+		} else {
+			useInd <- c(useInd, which(lengthVec == length(matArgs)))
+			
+			test <- vapply(matMap, function(mp){
+				check <- matArgs[as.integer(mp$arg)] == mp$val
+				if(length(check) == 0) check <- FALSE
+				return(check)
+			}, TRUE)
+			useInd <- c(useInd, which(test))
 		}
 
-		useInd <- c(useInd, which(lengthVec == length(matArgs)))
-
-		test <- vapply(matMap, function(mp){
-			check <- matArgs[as.integer(mp$arg)] == mp$val
-			if(length(check) == 0) check <- FALSE
-			return(check)
-		}, TRUE)
-		useInd <- c(useInd, which(test))
+		
 
 		if(length(useInd) == 0){
 			if(!is.null(finallyInd)){
