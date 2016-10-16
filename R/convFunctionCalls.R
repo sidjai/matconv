@@ -344,11 +344,15 @@ makeFunSwitcher <- function(lFlags){
 
 	return(function(matArgs, numOut = 1){
 		useInd <- NULL
-		if(numOut > 1 || any(!is.na(lengthOutVec))){
+		if(any(!is.na(lengthOutVec))){
 			useInd <- which(lengthOutVec == numOut)
-		} else {
+		}
+		
+		if(any(!is.na(lengthVec))){
 			useInd <- c(useInd, which(lengthVec == length(matArgs)))
-			
+		}
+		
+		if(any(!is.null(unlist(matMap)))){
 			test <- vapply(matMap, function(mp){
 				check <- matArgs[as.integer(mp$arg)] == mp$val
 				if(length(check) == 0) check <- FALSE
