@@ -24,8 +24,8 @@ convFunctionsCalls <- function(linesMat, maps){
 		funcStart <- regexpr(pat, lin)
 		restLin <- substr(lin, funcStart, nchar(lin)) 
 		guts <- getBetween(restLin, "(", ")")
-		matArgs <- strsplit(removeStrings(guts), ",")[[1]]
-		matArgs <- putBackStrings(matArgs, guts)
+		matArgs <- strsplit(removeStrings(removeGroups(guts)), ",")[[1]]
+		matArgs <- putBackGroups(putBackStrings(matArgs, guts), guts)
 		
 		matReqVars <- strsplit(
 			getBetween(

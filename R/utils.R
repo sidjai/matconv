@@ -129,6 +129,26 @@ removeStrings <- function(linesMat){
 	return(linesDes)
 }
 
+removeGroups <- function(linesMat){
+	
+	linesDes <- vapply(linesMat, function(lin){
+		bef <- noStringLin <- lin
+		ind <- 1
+		check <- TRUE
+		
+		while(check){
+			ins <- sprintf("#%s#", letters[ind])
+			noStringLin <- getBetween(noStringLin, "(", ")", 
+																insertChar = ins, shInclude = TRUE)
+			check <- !all(bef == noStringLin)
+			bef <- noStringLin
+			ind <- ind + 1
+		}
+		return(noStringLin)
+	}, "sdf", USE.NAMES = FALSE)
+	return(linesDes)
+}
+
 getMainQuote <- function(lin){
 	rightQuote <- rep("'", length(lin))
 	doubleSet <- (regexpr("'", lin) > regexpr('"', lin) & regexpr('"', lin) > 0)
@@ -151,6 +171,24 @@ putBackStrings <- function(argVec, lin){
 			
 			lin <- getBetween(lin, rightQuote, rightQuote,
 				insertChar = "", shInclude = TRUE)
+		}
+	}
+	return(argVec)
+}
+
+putBackGroups <- function(argVec, lin){
+	bef <- lin
+	if(length(argVec) == 0) return(lin)
+	
+	ins <- regmatches(argVec, gregexpr("[#]\\D+[#]", argVec))
+	needRep <- vapply(ins, function(x){ length(x) > 0 }, TRUE)
+	for(ind in which(needRep)){
+		for(pat in ins[[ind]]){
+			realStr <- getBetween(lin, "(", ")", shInclude = TRUE)
+			argVec[ind] <- gsub(pat, realStr, argVec[ind])
+			
+			lin <- getBetween(lin, "(", ")",
+												insertChar = "", shInclude = TRUE)
 		}
 	}
 	return(argVec)
