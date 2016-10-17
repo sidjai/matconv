@@ -256,13 +256,16 @@ parseFlags <- function(dictLines){
 			nchar(dictLines[ind]),
 			stDiv[[ind]] - 1
 		)
+		bef <- 1
+		strSansFlags[ind] <- ""
 		for(flagInd in 1:length(left)){
 			flagStr[[ind]] <- c(unlist(flagStr[[ind]]), substr(dictLines[ind], left[flagInd], right[flagInd]))
-			strSansFlags[ind] <- paste0(
-				substr(strSansFlags[ind], 1, left[flagInd] - 3),
-				substr(strSansFlags[ind], right[flagInd] + 1, nchar(strSansFlags[ind]))
-			)
+			
+			addStr <- substr(dictLines[ind], bef, left[flagInd] - 3)
+			strSansFlags[ind] <- paste0(strSansFlags[ind], addStr)
+			bef <- right[flagInd] + 1
 		}
+		strSansFlags[ind] <- paste0(strSansFlags[ind],  substr(dictLines[ind], bef, nchar(dictLines[ind])))
 	}
 
 	#make flags and funcSwitchers
