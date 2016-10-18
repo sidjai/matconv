@@ -46,7 +46,10 @@ convFunctionsCalls <- function(linesMat, maps){
 		} else {
 			#Multiple dictionaries per matlab function
 			#use fun switcher
-			useMapInd <- map$flags$multSwitch(matArgs, length(matReqVars))
+			useMapInd <- map$flags$multSwitch(
+				matArgs, 
+				ifelse(length(matReqVars) == 0, 1, length(matReqVars)))
+			
 			varOut <- map$flags[[useMapInd]]$varOut
 		}
 		
