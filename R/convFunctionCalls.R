@@ -42,16 +42,17 @@ convFunctionsCalls <- function(linesMat, maps){
 		
 		if(length(map$argMap) == 1){
 			useMapInd <- 1
+			varOut <- map$flags$varOut
 		} else {
 			#Multiple dictionaries per matlab function
 			#use fun switcher
 			useMapInd <- map$flags$multSwitch(matArgs, length(matReqVars))
+			varOut <- map$flags[[useMapInd]]$varOut
 		}
 		
 		rargs <- map$argMap[[useMapInd]](matArgs)$rargs
 		
 		#Use other flags
-		varOut <- map$flags[[useMapInd]]$varOut
 		if(!is.null(varOut)){
 			sliceAdd <- ifelse(grepl("\\[", varOut[1]), "", "$")
 			addCalls <- paste(
@@ -62,8 +63,10 @@ convFunctionsCalls <- function(linesMat, maps){
 				addCalls)
 			
 		} else {
-			out <- getBetween(restLin, '', ')',
+			out <- getBetween(removeGroups(restLin), '', '#\\D[#]', 
 				insertChar = rargs, whatIsEmpty = "first")
+			out <- putBackGroups(gsub('[#][a][#]', ")", out), restLin)
+			
 			out <- paste0(
 				substr(lin, 1, funcStart - 1),
 				out)

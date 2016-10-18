@@ -51,7 +51,7 @@ test_that("Multiple outputs work", {
 	map <- makeFuncMaps(dict)
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
-		"lout <- sort(hjkl, asdf); myMean <- lout$mean; myStd <- lout$std")
+		"lout <- sort(hjkl, asdf); myMean <- lout$mean; myStd <- lout$std;")
 
 })
 
@@ -88,5 +88,20 @@ test_that("Can convert functions with strings in it", {
 	result <- convFunctionsCalls(example, map)
 	expect_equal(result[1],
 		"thing <- 6 * 9 * lifeOffset(sort(hjkl, 'Thing'))")
+	
+})
+
+test_that("Can convert functions with groups for variables", {
+	dict <- c(
+		"matsort--if 2:sort, 2, 1",
+		"matsort--if 3:sort, 3")
+	
+	example <- c(
+		"thing <- matsort(lifeOffset(Thing, hjkl), 1)")
+	map <- makeFuncMaps(dict)
+	result <- convFunctionsCalls(example, map)
+	expect_equal(result[1],
+							 "thing <- sort(1, lifeOffset(Thing, hjkl))")
+	
 	
 })
