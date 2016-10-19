@@ -36,11 +36,13 @@ convUserFunctions <- function(linesMat){
   # save the appending stuff for last cause it throws off all the indices
   allAppObj <- c(returnObj, decObj)
   allAppInd <- c(retInd, decInd)
-
-  for (funi in rev(order(allAppInd))){
-  	linesMat <- append(linesMat, allAppObj[funi],
-                       after = allAppInd[funi])
-  }
+  
+	if(length(decInd) > 0){
+	  for (funi in rev(order(allAppInd))){
+	  	linesMat <- append(linesMat, allAppObj[funi],
+	                       after = allAppInd[funi])
+	  }
+	}
 
 
   return(linesMat)
