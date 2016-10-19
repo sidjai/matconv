@@ -105,3 +105,47 @@ test_that("Can convert functions with groups for variables", {
 	
 	
 })
+
+test_that("Can understand lines with strings in the arguments", {
+	dict <- "matsort:sort, 2, 1"
+	example <- c("'as, df'", "hjkl")
+	map <- makeFuncMaps(dict)
+	result <- map$matsort$argMap[[1]](example)$rargs
+	expect_equal(result, "sort(hjkl, 'as, df'")
+	
+	
+	
+})
+
+test_that("Can understand lines with groups in the arguments", {
+	dict <- "matsort:sort, 2, 1"
+	example <- c("(as, df)", "hjkl")
+	map <- makeFuncMaps(dict)
+	result <- map$matsort$argMap[[1]](example)$rargs
+	expect_equal(gsub("sort\\(", "", result), paste(rev(example), collapse = ', '))
+	
+	
+	
+})
+
+test_that("Can understand lines with data in the arguments", {
+	dict <- "matsort:sort, 2, 1"
+	example <- c("[as, df]", "hjkl")
+	map <- makeFuncMaps(dict)
+	result <- map$matsort$argMap[[1]](example)$rargs
+	expect_equal(gsub("sort\\(", "", result), paste(rev(example), collapse = ', '))
+	
+	
+	
+})
+
+test_that("Can understand lines with a mixture of unsanitary conditions", {
+	dict <- "matsort:sort, 2, 1"
+	example <- c("[what, 'as,(thing, last) df']", "hjkl")
+	map <- makeFuncMaps(dict)
+	result <- map$matsort$argMap[[1]](example)$rargs
+	expect_equal(gsub("sort\\(", "", result), paste(rev(example), collapse = ', '))
+	
+	
+	
+})

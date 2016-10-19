@@ -23,9 +23,8 @@ convFunctionsCalls <- function(linesMat, maps){
 		pat <- mapNames[linMapVec[convInd, 2]]
 		funcStart <- regexpr(pat, lin)
 		restLin <- substr(lin, funcStart, nchar(lin)) 
-		guts <- getBetween(restLin, "(", ")")
-		matArgs <- strsplit(removeStrings(removeGroups(guts)), ",")[[1]]
-		matArgs <- putBackGroups(putBackStrings(matArgs, guts), guts)
+		
+		matArgs <- sanitizeMatArgs(restLin)
 		
 		matReqVars <- strsplit(
 			getBetween(
@@ -296,7 +295,7 @@ parseFlags <- function(dictLines){
 			flags[[unind]] <- lapply(wantVec, function(x){
 				makeFlag(flagStr[[x]], makeSwitch = FALSE)
 			})
-			flags[[unind]]$multSwitch <- makeFunSwitcher(lapply(flagStr, function(x){x[1]}))
+			flags[[unind]]$multSwitch <- makeFunSwitcher(lapply(flagStr[wantVec], function(x){x[1]}))
 
 		} else {
 			flags[[unind]] <- makeFlag(flagStr[[wantVec]])
@@ -388,4 +387,12 @@ makeFunSwitcher <- function(lFlags){
 
 		return(useInd[1])
 	})
+}
+
+sanitizeMatArgs <- function(rightSideLin){
+	guts <- getBetween(rightSideLin, "(", ")")
+	matArgs <- strsplit(removeStrings(removeData(removeGroups(guts))), ",")[[1]]
+	matArgs <- putBackGroups(putBackData(putBackStrings(matArgs, guts), guts), guts)
+	return(matArgs)
+	
 }
