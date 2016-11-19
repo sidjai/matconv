@@ -9,6 +9,21 @@ The code consists of a wrapper function, 'mat2r' to do the various parts of the 
 ## Installation
 
 ```r
+install.packages("matconv")
+```
+
+For the most up to date version you can go to the development version using:
+
+```r
 install.packages("devtools")
 devtools::install_github("sidjai/matconv")
+```
+
+For a detailed look into how to use this package you can look at the vignettes:
+
+```r
+library("rmarkdown")
+rmarkdown::render(paste(system.file(package="matconv"), "vignettes/basicSyntax.rmd", sep="/"))
+rmarkdown::render(paste(system.file(package="matconv"), "vignettes/functionCalls.rmd", sep="/"))
+rmarkdown::render(paste(system.file(package="matconv"), "vignettes/overallUse.rmd", sep="/"))
 ```
