@@ -20,6 +20,15 @@ convSemiColon <- function(linesMat){
 	return(gsub(";$", "", linesMat))
 }
 
+convDotSyntax <- function(linesMat){
+	linesOut <- gsub("[.][*]", "*", linesMat)
+	linesOut <- gsub("[.][/]", "/", linesOut)
+	linesOut <- gsub("[.]\\^", "^", linesOut)
+	
+	
+	return(linesOut)
+}
+
 convEqualsArrow <- function(linesMat){
 
 	linesOut <- gsub(" = ", " <- ", linesMat)
