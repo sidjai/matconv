@@ -4,7 +4,7 @@ author: "Siddarta Jairam"
 date: "`r strftime(Sys.time(),'%A, %B %d, %Y')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Overall design}
+  %\VignetteIndexEntry{function calls}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
