@@ -8,3 +8,9 @@ test_that("Dictionaries are loaded", {
 	expect_gt(length(hMaps), 0)
 	expect_gt(length(dataConvs), 0)
 })
+
+test_that("Straight conversions", {
+  matCode <- "thing = isnan(reee)"
+  out <- mat2r(matCode, funcConverters = hMaps, dataConverters = dataConvs)
+  expect_true(!is.na(match(out$rCode, "thing <- is.na(reee)")))
+})

@@ -18,6 +18,8 @@ angle:Arg, 1
 conj:Conj, 1
 real:Re, 1
 imag:Im, 1
+isnan:is.na, 1
+isinf:is.infinite, 1
 dot:sum, %1 * %2
 cross:pracma::cross, 1, 2
 inv:solve, 1
