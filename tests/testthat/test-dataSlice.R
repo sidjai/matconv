@@ -9,6 +9,14 @@ test_that("Can slice with one instance",{
 	
 	
 })
+test_that("Dont convert floating point numbers",{
+	matLine <- "asdfasdf <- 5.4"
+	mp <- makeSliceMap(matClass = "structure", rClass = "list")
+	res <- mp(matLine)
+	expect_true(!is.na(match(res, "asdfasdf <- 5.4")))
+	
+	
+})
 
 test_that("Can slice with Structures",{
 	matLine <- "asdfasdf <- dat.temp(1,2)"

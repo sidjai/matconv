@@ -64,18 +64,28 @@ makeSliceMap <- function(leftSym, rightSym, rClass, matClass = ""){
 		goodLin <- lin
 		
 		guts <- shExtractData(lin, leftSym, rightSym, type = "slice")
-		while(nzchar(guts)){
+		check <- length(guts) != 0 && nzchar(guts)
+		while(check){
 			bef <- goodLin
 			
 			goodLin <- if(matClass == "structure"){
 				rout <- sprintf("%s'%s'%s", rBounds[1], guts, rBounds[2])
 				bas <- getBetween(goodLin, leftSym, rightSym, insertChar = rout)
-				sub("[.]", "", bas)
+				if (is.na(suppressWarnings(as.numeric(guts)))) {
+					sub("[.]", "", bas)
+				} else {
+					check <- FALSE
+					goodLin
+				}
 			} else {
 				rout <- paste0(rBounds[1], guts, rBounds[2])
 				getBetween(goodLin, leftSym, rightSym, insertChar = rout, shInclude = TRUE)
 			}
 			guts <- getBetween(removeStrings(goodLin), leftSym, rightSym)
+			if (check) {
+				check <- length(guts) != 0 && nzchar(guts)
+			}
+			
 		}
 		return(goodLin)
 		
