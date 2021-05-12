@@ -3,7 +3,6 @@
 \docType{package}
 \name{matconv}
 \alias{matconv}
-\alias{matconv-package}
 \title{matconv: A Utility to Convert Matlab / Octave Code into R Code}
 \description{
 Transferring over a code base from Matlab to R is often a repetitive and
