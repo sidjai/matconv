@@ -54,4 +54,3 @@ funcMap$size$argMap[[rightConv]](test2)
 #$rargs
  "dim(mat)[2]"
 }
-

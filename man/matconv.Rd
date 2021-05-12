@@ -18,4 +18,3 @@ friendly and may not even run afterwards. However, the rudimentary syntax,
 base function and data structure conversion is done quickly so that the
 maintainer can focus on changes to the design structure.
 }
-

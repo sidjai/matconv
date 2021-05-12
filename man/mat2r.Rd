@@ -4,8 +4,8 @@
 \alias{mat2r}
 \title{mat2r}
 \usage{
-mat2r(inMat, pathOutR = "", funcConverters = NULL, dataConverters = NULL,
-  verbose = 1)
+mat2r(inMat, pathOutR = "", funcConverters = NULL,
+  dataConverters = NULL, verbose = 1)
 }
 \arguments{
 \item{inMat}{A file path with the input Matlab / Octave code to be converted
@@ -48,4 +48,3 @@ matIn <- c("function [ dat ] = xlsReadPretty(varargin)",
 #"\\treturn(dat)"
 #"}"
 }
-

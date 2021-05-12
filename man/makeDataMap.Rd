@@ -38,4 +38,3 @@ The requirements for conversion are the bounds given by both left
 	 dataMap("otherThing <- {23,2, '3.2'; NaN, 6, 8}")
 	 # "otherThing <- list(list(23, 2, '3.2'), list(NaN, 6, 8))"
 }
-

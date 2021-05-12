@@ -1,7 +1,7 @@
 Package: matconv
 Type: Package
 Title: A Code Converter from the Matlab/Octave Language to R
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(person("Siddarta", "Jairam", email = "sidjsb@gmail.com", role = c("aut", "cre")),
   person("David", "Hiebeler", email = "hiebeler@math.umaine.edu", role = "ctb"))
 Maintainer: Siddarta Jairam <sidjsb@gmail.com>
@@ -21,6 +21,7 @@ Imports:
     methods
 Suggests:
     knitr,
+    rmarkdown,
     testthat
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1

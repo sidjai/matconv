@@ -39,4 +39,3 @@ Slice notation for matrices are tricky because they can easily be
   sliceMap("junk <- students.AP.GPA")
   # junk <- students[['AP']][['GPA']]
 }
-
